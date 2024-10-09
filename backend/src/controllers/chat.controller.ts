@@ -4,7 +4,7 @@ import { Response } from 'express';
 import {Chat} from "../models/chat.schema"
 
 
-export const createChat = async(req: AuthenticatRequest<createChatDTO>, res: Response, Response: { new(body?: BodyInit | null, init?: ResponseInit): globalThis.Response; prototype: globalThis.Response; error(): globalThis.Response; json(data: any, init?: ResponseInit): globalThis.Response; redirect(url: string | URL, status?: number): globalThis.Response; })=>{
+export const createChat = async(req: AuthenticatRequest<createChatDTO>, res: Response)=>{
     try{
 
         const {id} = req.body
@@ -25,7 +25,7 @@ export const createChat = async(req: AuthenticatRequest<createChatDTO>, res: Res
             });
 
 
-            if(chat){
+            if(chat.length>0){
                 return res.status(200).json({
                     success:true ,
                     message:"Chats Fetched Successfully" ,

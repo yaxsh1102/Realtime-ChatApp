@@ -19,7 +19,7 @@ export interface AuthenticatRequest<T = any> extends Request {
 
 
 require("dotenv").config();
-const jwt_secret = process.env.JWT_SCERET;
+const jwt_secret = process.env.JWT_SECRET;
 
 if (jwt_secret === undefined) {
     throw new Error("No JWT Secret Found");
