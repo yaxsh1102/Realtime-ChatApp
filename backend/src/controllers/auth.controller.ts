@@ -38,7 +38,8 @@ export const signup  = async (req: Request<{} , {} , SignupDTO>, res: Response):
         name ,
         email ,
         password:hashedPassword ,
-        avatar:"ht"
+        avatar:"ht" ,
+        username
 
 
     })
@@ -46,7 +47,6 @@ export const signup  = async (req: Request<{} , {} , SignupDTO>, res: Response):
     const successResponse :SuccessResponseDTO<typeof newUser> ={
         success:true ,
         message:"User Registered Successfully",
-        data:newUser
 
     }
 
@@ -54,6 +54,7 @@ export const signup  = async (req: Request<{} , {} , SignupDTO>, res: Response):
 
 
   } catch (err) {
+    console.log(err)
     
     const errorResponse: ErrorResponseDTO = {
       success: false,

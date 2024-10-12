@@ -3,13 +3,14 @@ import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { ErrorResponseDTO } from "../dtos/error.dto";
 import { User as UserModel } from "../models/user.schema";
+import mongoose from "mongoose";
 
 interface User {
     id: string;
     email: string;
 }
 
-export interface AuthenticatRequest<T = any> extends Request {
+export interface AuthenticatRequest<T=null> extends Request {
     user: User;  
     body: T;     
 }
@@ -69,14 +70,16 @@ export const AuthenticatedUser = async (
         }
 
         req.user = {
-            id: user._id.toString(),
+            id: (user._id as mongoose.Types.ObjectId).toString(),
             email: user.email,
         };
         next();
     } catch (err) {
+        console.log(err)
+        
         const errResponse: ErrorResponseDTO = {
             success: false,
-            message: "Error Occurred",
+            message: "Token Expired" ,
         };
         return res.status(500).json(errResponse);
     }
