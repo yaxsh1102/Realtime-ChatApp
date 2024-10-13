@@ -1,6 +1,11 @@
 import React from 'react'
 
-const Message = ({ isRight = true }) => {
+interface MessageProps{
+  isRight:boolean ,
+  content:string
+}
+
+const Message = ({ isRight = true , content }:MessageProps) => {
   return (
     <div className={`w-full flex ${isRight ? 'justify-end' : 'justify-start'}`}>
       <div className={`flex items-start space-x-2 lg:max-w-72 max-w-64 rounded-lg p-1.5  ${isRight ? 'flex-row-reverse space-x-reverse' : ''}`}>

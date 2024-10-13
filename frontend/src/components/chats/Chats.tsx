@@ -1,11 +1,20 @@
-import React , {FC} from 'react'
+import React , {FC, useContext} from 'react'
 import { Chat } from '../../interfaces/interfaces'
 import ChatComponent from './Chat'
 import { CiCirclePlus } from 'react-icons/ci'
 import Searchbar from '../search/Searchbar'
+import { AppContext } from '../../context/AppContext'
 
 
 const Chats:FC = () => {
+  const appContext = useContext(AppContext);
+
+  if (!appContext) {
+    throw new Error('AppContext must be used within an AppProvider');
+  }
+  const { chats , setSelectedChatId } = appContext;
+
+
   return (
     <div className='lg:w-[30%] md:w-[45%] w-full h-full flex flex-col bg-[2f303a] bg-[#262729] border-r-[0.1px] border-slate-700
 ] no-scrollbar text-white'> 
@@ -17,40 +26,18 @@ const Chats:FC = () => {
             <p className='pl-3'>New Chat</p>
         </div>
         <div className='overflow-y-scroll no-scrollbar'>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
-    <ChatComponent ></ChatComponent>
+
+
+          {chats && chats.length>0 && chats.map((chat:Chat)=>(
+            <div key={chat._id} >
+              <ChatComponent chat={chat}></ChatComponent>
+            </div>
+
+          ))}
+    
     </div>
     </div>
   )
-}
+} 
 
 export default Chats

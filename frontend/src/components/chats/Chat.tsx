@@ -1,30 +1,46 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { Chat } from '../../interfaces/interfaces'
+import { AppContext, useAppContext } from '../../context/AppContext';
 
 
 
- 
+interface ChatComponentProps { 
+  chat: Chat; 
+}
 
-const ChatComponent = () => {
+
+
+const ChatComponent:React.FC<ChatComponentProps> = ({chat}) => {
+  const {setCurrentChat} = useAppContext()
+
+  const dateStr = chat.lastMessage?.createdAt +"";
+const dateObj = new Date(dateStr);
+
+const hours = dateObj.getUTCHours().toString().padStart(2, '0');
+const minutes = dateObj.getUTCMinutes().toString().padStart(2, '0');
+
+const formattedTime = `${hours}:${minutes}`;
+
+
   return (
-    <div className='w-full'>
-        <div className='flex justify-between px-4 items-center h-16 mt-2 w-full'>
+    <div className='w-full' >
+        <div className='flex justify-between px-4 items-center h-16 mt-2 w-full hover:bg-[#3a3b3d] 'onClick={()=>{setCurrentChat(chat)}}>
             <div className='flex items-center w-full'>
-                <img src="https://api.multiavatar.com/mann%20male.svg" height={16} width={16} className='lg:h-12 lg:w-12 md:h-8 md:w-8 h-12 w-12' alt="" />
+                <img src={chat.members[1].avatar} height={16} width={16} className='lg:h-12 lg:w-12 md:h-8 md:w-8 h-12 w-12' alt="" />
             <div className='flex flex-col px-4 w-full'>
                 <div className='flex justify-between w-full items-center'>
-                <p>{"Ghanshyam"}</p>
-                <p className='text-xs'>11:29</p>
-                </div>
+                <p>{chat.members[0].name}</p>
+                <p className='text-xs'>{chat.lastMessage? (formattedTime):  ""}</p>
+                </div> 
 
-                <p className='text-xs '>{"hii i was busy a bit"}</p>
+                <p className='text-xs '>{chat.lastMessage?.content || "No New Message"}</p>
             </div>
 
 
             </div> 
 
-        </div>
-    </div>
+        </div> 
+    </div> 
   )
 }
 

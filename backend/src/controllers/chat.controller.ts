@@ -93,21 +93,27 @@ export const createChat = async(req: AuthenticatRequest<null>, res: Response)=>{
 export const getChats = async(req : AuthenticatRequest<null> , res:Response)=>{ 
     try{
 
+    
+
         const data = await Chat.find({
             members:{$elemMatch:{$eq:req.user.id}}}
         )
-        .populate("members -password")
+        .populate({path:"members" , 
+            select:"name email avatar"
+        })
         .populate(
             {
                 path:"lastMessage" ,
                 populate:{
                     path:"sender" ,
-                    select:"username avatar email name"
+                    select:" avatar email name"
                 }
 
 
         })
-        .populate("admin -password")
+        .populate({path:"admin" ,  
+            select:"name email avatar"
+            })
         .sort({updatedAt:-1})
 
         if(!data){
@@ -127,9 +133,10 @@ export const getChats = async(req : AuthenticatRequest<null> , res:Response)=>{
 
         
     }catch(err){
+        console.log(err)
 
         errResponse.message="Error Occured"
-        return res.status(500).json(errResponse)
+        return res.status(500).json(errResponse) 
     }
 }
 

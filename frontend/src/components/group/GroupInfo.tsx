@@ -6,9 +6,11 @@ import React, { Dispatch, SetStateAction } from 'react';
 
 interface GroupInfoProps {
   setShowMenu: Dispatch<SetStateAction<boolean>>; 
+  setShowCreateChat: Dispatch<SetStateAction<boolean>>; 
+
 }
 
-const GroupInfo: React.FC<GroupInfoProps> = ({ setShowMenu }) => {
+const GroupInfo: React.FC<GroupInfoProps> = ({ setShowMenu , setShowCreateChat }) => {
   return (
     <div className="w-full h-full flex flex-col bg-[#262729] text-white relative">
       <p className='absolute top-4 left-2 hover:cursor-pointer' onClick={() => {
@@ -37,7 +39,7 @@ const GroupInfo: React.FC<GroupInfoProps> = ({ setShowMenu }) => {
         </div>
 
         <div className="flex flex-col space-y-2">
-          <button className="bg-blue-500 text-white py-2 px-4 rounded">
+          <button className="bg-blue-500 text-white py-2 px-4 rounded" onClick={()=>{setShowCreateChat(true)}}>
             Add Participant
           </button>
           <button className="bg-red-500 text-white py-2 px-4 rounded flex items-center justify-center">

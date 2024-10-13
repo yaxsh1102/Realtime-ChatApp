@@ -8,7 +8,6 @@ import { SuccessResponseDTO } from "../dtos/success.dto";
 import { contentDTO } from "../dtos/content.dto";
 import { User } from "../models/user.schema";
 import { IChat } from "../models/chat.schema";
-import { IUser } from "../models/user.schema";
 import { IMessage } from "../models/message.schema";
 
 let errResponse:ErrorResponseDTO={
@@ -17,7 +16,7 @@ let errResponse:ErrorResponseDTO={
 }
 
 
-const getAllChats = async(req:AuthenticatRequest<null> , res:Response)=>{
+export const getMessages = async(req:AuthenticatRequest<null> , res:Response)=>{
     try {
         const {chatId} = req.params ;
 
@@ -37,7 +36,10 @@ const getAllChats = async(req:AuthenticatRequest<null> , res:Response)=>{
 
 
         const messages = await Message.find({chat:chatId})
-                                                .populate("sender name username avatar")
+                                                .populate({
+                                                    path:"sender" , 
+                                                    select:"name username avatar"
+                                                })
                                                 .populate("chat")
 
 
@@ -48,8 +50,11 @@ const getAllChats = async(req:AuthenticatRequest<null> , res:Response)=>{
             data:messages
         }
 
+        return res.status(200).json(success)
+
                                         
     } catch (error) {
+        console.log(error)
         errResponse.message="Error Ocurred" 
         return res.status(500).json(errResponse)
         
@@ -58,7 +63,7 @@ const getAllChats = async(req:AuthenticatRequest<null> , res:Response)=>{
 
 
 
-const sendMessage = async(req:AuthenticatRequest<contentDTO> , res:Response)=>{
+export const sendMessage = async(req:AuthenticatRequest<contentDTO> , res:Response)=>{
     try{
         const {chatId} = req.params 
         const {content} = req.body ;
