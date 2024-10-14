@@ -19,9 +19,9 @@ function App() {
     throw new Error('AppContext must be used within an AppProvider');
   }
 
-  const { chats, setChats , loader , setLoader } = appContext;
+  const { chats, setChats , loader , setLoader , createChat , setCreateChat , setShowMenu , showMenu } = appContext;
   useEffect(()=>{
-    localStorage.setItem("token" , "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Inlhc2giLCJpZCI6IjY3MDNjMzM4YTA2NzMyZmQ3YjU4YjdjNCIsImlhdCI6MTcyODg0NjY3MiwiZXhwIjoxNzI4ODUzODcyfQ.GahX8CFNhbzS9UZ6HND4Clm0bmIwTrKKTYRiSJPJHu0")
+    localStorage.setItem("token" , "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Inlhc2giLCJpZCI6IjY3MDNjMzM4YTA2NzMyZmQ3YjU4YjdjNCIsImlhdCI6MTcyODkzMTYxOSwiZXhwIjoxNzI4OTM4ODE5fQ.eOMPFCgPe6BdWSCLeU8_FYQwgimXpK56JAsOMjZiSk4")
     async function getChats (){
     setLoader(true)
       const data = await fetch(process.env.REACT_APP_BACKEND_URL as string + "chat/get-chats" , {
@@ -34,18 +34,13 @@ function App() {
     const resp = await data.json()
     console.log(resp) 
     setChats(resp.data)
-    setLoader(false)
  
     }
     getChats()
 
   } , [])
-  const [showMenu, setShowMenu] = useState<boolean>(true);
-  const [showCreateChat, setShowCreateChat] = useState<boolean>(false);
   const groupInfoRef = useRef<HTMLDivElement>(null);
-  if(loader){
-    return <Loader></Loader>
-  }
+ 
 
   
 
@@ -65,7 +60,7 @@ function App() {
         <div className="fixed inset-0 bg-black bg-opacity-50 z-10"></div>
       )}
 
-      {showCreateChat && (
+      {createChat && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-30 flex items-center justify-center">
           <div className="bg-[#262729] rounded-lg p-4">
             <CreateChat />
@@ -79,7 +74,7 @@ function App() {
           showMenu ? 'right-0' : 'right-[-1200px]'
         } md:w-[50%] w-full h-full absolute top-0 z-20 transition-all duration-300`}
       >
-        <GroupInfo setShowMenu={setShowMenu} setShowCreateChat={setShowCreateChat} />
+        <GroupInfo setShowMenu={setShowMenu} setShowCreateChat={setCreateChat} />
       </div>
     </div>
   );

@@ -67,6 +67,8 @@ export const sendMessage = async(req:AuthenticatRequest<contentDTO> , res:Respon
     try{
         const {chatId} = req.params 
         const {content} = req.body ;
+        console.log(req.body)
+
 
         if(!chatId || !content){
             errResponse.message="Missing parameters"
@@ -92,20 +94,13 @@ export const sendMessage = async(req:AuthenticatRequest<contentDTO> , res:Respon
         await chat.save()
 
 
-        const newMessage = await Message.findOne({_id:message._id})
-                                                            .populate({
-                                                                path:"sender" ,
-                                                                select:"name pic email"
-                                                             })
-                                                             .populate({
-                                                                path:"chat" ,
-                                                                select:"members" ,
-                                                                populate:{
-                                                                    path: "members",
-                                                                    select: "name avatar email",
-                                                                }
+        const newMessage =await Message.find({chat:chatId})
+                                                    .populate({
+                                                        path:"sender" , 
+                                                        select:"name username avatar"
+                                                    })
+                                                    .populate("chat")
 
-                                                            })  
 
 
 

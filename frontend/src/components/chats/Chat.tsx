@@ -1,6 +1,7 @@
 import React, { useContext } from 'react'
 import { Chat } from '../../interfaces/interfaces'
 import { AppContext, useAppContext } from '../../context/AppContext';
+import { extractTime } from '../miscellaneous/timeExtract';
 
 
 
@@ -11,15 +12,10 @@ interface ChatComponentProps {
 
 
 const ChatComponent:React.FC<ChatComponentProps> = ({chat}) => {
-  const {setCurrentChat} = useAppContext()
+   const {setCurrentChat} = useAppContext()
+   const dateStr = chat.lastMessage?.createdAt +""
+   const formattedTime = extractTime(dateStr);
 
-  const dateStr = chat.lastMessage?.createdAt +"";
-const dateObj = new Date(dateStr);
-
-const hours = dateObj.getUTCHours().toString().padStart(2, '0');
-const minutes = dateObj.getUTCMinutes().toString().padStart(2, '0');
-
-const formattedTime = `${hours}:${minutes}`;
 
 
   return (

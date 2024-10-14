@@ -8,6 +8,8 @@ interface AppContextType {
   setLoader: React.Dispatch<React.SetStateAction<boolean>>;
   chats: Chat[];
   setChats: React.Dispatch<React.SetStateAction<Chat[]>>;
+  filteredChats: Chat[]|null;
+  setFilteredChats: React.Dispatch<React.SetStateAction<Chat[]|null>>;
   selectedChatId:string|null ,
   setSelectedChatId:React.Dispatch<React.SetStateAction<string|null>>
   currentMessages: Message[] | null;
@@ -15,7 +17,11 @@ interface AppContextType {
   chatMessages: ChatMessages[] ;
   setChatMessages:React.Dispatch<React.SetStateAction<ChatMessages[]>>
   currentChat:Chat|null ,
-  setCurrentChat :React.Dispatch<React.SetStateAction<Chat|null>>
+  setCurrentChat :React.Dispatch<React.SetStateAction<Chat|null>> ,
+  showMenu:boolean, 
+  setShowMenu:React.Dispatch<React.SetStateAction<boolean>> ,
+  createChat:boolean ,
+  setCreateChat:React.Dispatch<React.SetStateAction<boolean>> 
   
 
 }
@@ -28,17 +34,20 @@ interface AppProviderProps {
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User>({
-    _id:" 6703c338a06732fd7b58b7c4" ,
+    _id:"6703c338a06732fd7b58b7c4" ,
     name:"yash" ,
     email:"yash" , 
     avatar:"https://api.multiavatar.com/yash%20male.svg"
   } as User);
   const [loader, setLoader] = useState<boolean>(false);
   const [chats, setChats] = useState<Chat[]>([]);
+  const [filteredChats, setFilteredChats] = useState<Chat[]|null>(null);
   const [currentMessages, setCurrentMessages] = useState<Message[] | null>(null);
   const[chatMessages , setChatMessages]=useState<ChatMessages[]>([])
   const[selectedChatId , setSelectedChatId]=useState<string|null>(null)
   const[currentChat , setCurrentChat] = useState<Chat|null>(null)
+  const[showMenu , setShowMenu] = useState<boolean>(false)
+  const[createChat , setCreateChat] = useState<boolean>(false)
 
   const contextValue: AppContextType = {
     user,
@@ -54,7 +63,13 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     selectedChatId ,
     setSelectedChatId ,
     currentChat , 
-    setCurrentChat
+    setCurrentChat ,
+    showMenu , 
+    setShowMenu ,
+    createChat ,
+    setCreateChat ,
+    filteredChats ,
+    setFilteredChats
 
   };
 

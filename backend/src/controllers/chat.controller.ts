@@ -8,6 +8,7 @@ import { Response } from 'express';
 import { modifyGroupDTO } from '../dtos/modifyGroup.dto';
 import mongoose  from 'mongoose';
 import { SuccessResponseDTO } from './../dtos/success.dto';
+import { searchUserDTO } from '../dtos/searchuser.dto';
 
 let errResponse:ErrorResponseDTO={
     success:false ,
@@ -374,6 +375,41 @@ export const getGroupChatDetails = async(req:AuthenticatRequest<null> ,res:Respo
         return res.status(500).json(errResponse)
 
     }
+}
+
+export const getSearchResults = async(req:AuthenticatRequest<searchUserDTO> , res:Response)=>{
+    try{
+
+        const {name} = req.body ;
+        if(!name){
+            errResponse.message="No Parameters Found" 
+            return res.status(400).json(errResponse)
+        }
+
+
+        const data = await User.find({
+            name: { $regex: req.body.name, $options: 'i' }  
+          }).select("name email avatar")
+
+          const success:SuccessResponseDTO<typeof data>={
+            success:true , 
+            message:"Fetched Users" ,
+            data:data
+          }
+
+          return res.status(200).json(success)
+
+        
+
+
+
+
+    }catch(err){
+        errResponse.message="Error Occured"
+        return res.status(500).json(errResponse)
+
+    }
+
 }
 
 

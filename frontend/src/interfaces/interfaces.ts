@@ -6,6 +6,7 @@ export interface User {
 }
 
 export interface Message {
+    _id:string ,
     content: string;
     sender: User;
     createdAt:string

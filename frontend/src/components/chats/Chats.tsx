@@ -12,7 +12,9 @@ const Chats:FC = () => {
   if (!appContext) {
     throw new Error('AppContext must be used within an AppProvider');
   }
-  const { chats , setSelectedChatId } = appContext;
+  const { chats , setCreateChat , createChat , setShowMenu , showMenu , filteredChats } = appContext;
+  console.log(chats)
+  console.log(filteredChats)
 
 
   return (
@@ -21,21 +23,28 @@ const Chats:FC = () => {
       <Searchbar></Searchbar>
 
 
-      <div className='flex  justify-start items-center px-3 mt-4'>
+      <div className='flex  justify-start items-center px-3 mt-4' onClick={()=>{setCreateChat(true)}}>
             <CiCirclePlus className='h-14 w-14'  fill='gray'></CiCirclePlus>
             <p className='pl-3'>New Chat</p>
         </div>
-        <div className='overflow-y-scroll no-scrollbar'>
 
 
-          {chats && chats.length>0 && chats.map((chat:Chat)=>(
-            <div key={chat._id} >
-              <ChatComponent chat={chat}></ChatComponent>
-            </div>
-
-          ))}
     
-    </div>
+        <div className='overflow-y-scroll no-scrollbar'>
+        {filteredChats && filteredChats.length > 0 ? (
+          filteredChats.map((chat: Chat) => (
+            <ChatComponent key={chat._id} chat={chat} />
+          ))
+        ) : (
+          chats && chats.length > 0 ? (
+            chats.map((chat: Chat) => (
+              <ChatComponent key={chat._id} chat={chat} />
+            ))
+          ) : (
+            <div>No Chats Found</div>
+          )
+        )}
+      </div>
     </div>
   )
 } 

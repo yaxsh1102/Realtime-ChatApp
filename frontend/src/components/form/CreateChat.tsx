@@ -1,38 +1,39 @@
 import React, { useState, useEffect, ChangeEvent } from 'react';
 import { MdCancel } from 'react-icons/md';
 import GroupParticipants from '../group/GroupParticipants';
+import { useAppContext } from '../../context/AppContext';
+import { useDebounce } from '../hooks/useDebounce';
 
 interface User {
   id: number;
   name: string;
 }
 
-const mockUsers: User[] = [
-  { id: 1, name: 'Alice Johnson' },
-  { id: 2, name: 'Bob Smith' },
-  { id: 3, name: 'Charlie Brown' },
-  { id: 4, name: 'David Lee' },
-  { id: 5, name: 'Eva Martinez' },
-];
-
 const CreateChat: React.FC = () => {
   const [isGroupChat, setIsGroupChat] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 1500);
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false); // Added loading state
+  const { setCreateChat } = useAppContext();
 
   useEffect(() => {
     if (searchTerm.length > 0) {
-      const filteredResults = mockUsers.filter(user =>
-        user.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setSearchResults(filteredResults);
-      setIsDropdownVisible(true);
+      setIsDropdownVisible(true); // Show dropdown when typing starts
+      setLoading(true); // Set loading to true immediately when typing starts
     } else {
+      setIsDropdownVisible(false); // Hide dropdown if search term is empty
       setSearchResults([]);
-      setIsDropdownVisible(false);
+      setLoading(false); // No need to show loading if there's no search term
     }
   }, [searchTerm]);
+
+  useEffect(() => {
+    if (debouncedSearchTerm.length > 0) {
+      handleSearch(debouncedSearchTerm);
+    }
+  }, [debouncedSearchTerm]);
 
   const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -44,8 +45,30 @@ const CreateChat: React.FC = () => {
     setIsDropdownVisible(false);
   };
 
+  async function handleSearch(name: string) {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}chat/get-search-results`, {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ name }),
+      });
+
+      const data = await response.json();
+      console.log(data)
+      setSearchResults(data);
+      setLoading(false); 
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      setSearchResults([]);
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className=" sm:w-[40rem] w-[23rem] bg-[#262729] h-full sm:p-6 p-4 flex flex-col">
+    <div className="sm:w-[40rem] w-[23rem] bg-[#262729] h-full sm:p-6 p-4 flex flex-col">
       <div className="mb-4">
         <label className="inline-flex items-center cursor-pointer">
           <input
@@ -67,39 +90,48 @@ const CreateChat: React.FC = () => {
           placeholder="Search users..."
           value={searchTerm}
           onChange={handleSearchChange}
-          className="md:w-full  w-[100%] mx-auto px-4 py-2 focus:outline-none text-slate-400 h-8 bg-[#2e3033] border-b-[0.5px] border-b-white focus:border-b-[1px] focus:border-indigo-600"
+          className="md:w-full w-[100%] mx-auto px-4 py-2 focus:outline-none text-slate-400 h-8 bg-[#2e3033] border-b-[0.5px] border-b-white focus:border-b-[1px] focus:border-indigo-600"
         />
 
         {isDropdownVisible && (
           <div className="absolute z-10 w-full mt-12 bg-white rounded-md shadow-lg max-h-48 overflow-y-auto">
-            {searchResults.length > 0 ? (
+            {loading ? (
+              <div className="px-4 py-2 text-gray-500">Loading...</div> 
+            ) : searchResults.length > 0 ? (
               searchResults.map((user) => (
                 <div
                   key={user.id}
                   onClick={() => handleUserSelect(user)}
                   className="px-4 py-2 cursor-pointer hover:bg-gray-100"
                 >
-                    <GroupParticipants></GroupParticipants>
+                  <GroupParticipants></GroupParticipants>
                 </div>
               ))
             ) : (
               <div className="px-4 py-2 text-gray-500">No results found</div>
             )}
           </div>
-        )} 
+        )}
       </div>
 
       {isGroupChat && (
-        <div className='flex flex-col flex-grow'>
+        <div className="flex flex-col flex-grow">
           <p className="text-white mb-2">Members</p>
-          <div className='flex-grow overflow-x-auto no-scrollbar'>
-            <div className='flex space-x-2 pb-2'>
+          <div className="flex-grow overflow-x-auto no-scrollbar">
+            <div className="flex space-x-2 pb-2">
               {[...Array(6)].map((_, index) => (
-                <div key={index} className='flex-shrink-0 bg-slate-700 flex justify-between items-center w-[8rem] sm:w-[8.4rem] h-12 rounded-full border-4 border-black relative px-2'>
-                  <img src={`https://api.multiavatar.com/avatar${index + 1}.svg`} alt='' className='w-8 h-8' />
-                  <p className='text-sm text-slate-300 truncate'>Ghanshyam</p>
-                  <button className='absolute -bottom-1 right-0 focus:outline-none'>
-                    <MdCancel fill='white' />
+                <div
+                  key={index}
+                  className="flex-shrink-0 bg-slate-700 flex justify-between items-center w-[8rem] sm:w-[8.4rem] h-12 rounded-full border-4 border-black relative px-2"
+                >
+                  <img
+                    src={`https://api.multiavatar.com/avatar${index + 1}.svg`}
+                    alt=""
+                    className="w-8 h-8"
+                  />
+                  <p className="text-sm text-slate-300 truncate">Ghanshyam</p>
+                  <button className="absolute -bottom-1 right-0 focus:outline-none">
+                    <MdCancel fill="white" />
                   </button>
                 </div>
               ))}
@@ -108,9 +140,13 @@ const CreateChat: React.FC = () => {
         </div>
       )}
 
-      <div className='w-full flex justify-between mt-4'>
-        <button className='w-[48%] h-8 bg-indigo-600 text-white rounded'>Create</button>
-        <button className='w-[48%] h-8 bg-slate-800 text-white rounded'>Cancel</button>
+      <div className="w-full flex justify-between mt-4">
+        <button className="w-[48%] h-8 bg-indigo-600 text-white rounded">
+          Create
+        </button>
+        <button className="w-[48%] h-8 bg-slate-800 text-white rounded">
+          Cancel
+        </button>
       </div>
     </div>
   );
