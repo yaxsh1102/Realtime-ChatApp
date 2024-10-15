@@ -19,9 +19,9 @@ function App() {
     throw new Error('AppContext must be used within an AppProvider');
   }
 
-  const { chats, setChats , loader , setLoader , createChat , setCreateChat , setShowMenu , showMenu } = appContext;
+  const { chats, setChats , loader , setLoader , createChat , setCreateChat , setShowMenu , showMenu  , showGroupInfo } = appContext;
   useEffect(()=>{
-    localStorage.setItem("token" , "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Inlhc2giLCJpZCI6IjY3MDNjMzM4YTA2NzMyZmQ3YjU4YjdjNCIsImlhdCI6MTcyODkzMTYxOSwiZXhwIjoxNzI4OTM4ODE5fQ.eOMPFCgPe6BdWSCLeU8_FYQwgimXpK56JAsOMjZiSk4")
+    localStorage.setItem("token" , "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Inlhc2giLCJpZCI6IjY3MDNjMzM4YTA2NzMyZmQ3YjU4YjdjNCIsImlhdCI6MTcyOTAxMTI0NywiZXhwIjoxNzI5MDE4NDQ3fQ.BDGdBU-LE1O28uDT7BmnPJG6iUejC_ofyVyMuL29BAk")
     async function getChats (){
     setLoader(true)
       const data = await fetch(process.env.REACT_APP_BACKEND_URL as string + "chat/get-chats" , {
@@ -71,10 +71,10 @@ function App() {
       <div
         ref={groupInfoRef}
         className={`${
-          showMenu ? 'right-0' : 'right-[-1200px]'
+          showGroupInfo ? 'right-0' : 'right-[-1200px]'
         } md:w-[50%] w-full h-full absolute top-0 z-20 transition-all duration-300`}
       >
-        <GroupInfo setShowMenu={setShowMenu} setShowCreateChat={setCreateChat} />
+        <GroupInfo />
       </div>
     </div>
   );

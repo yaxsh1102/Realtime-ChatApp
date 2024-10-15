@@ -21,7 +21,11 @@ interface AppContextType {
   showMenu:boolean, 
   setShowMenu:React.Dispatch<React.SetStateAction<boolean>> ,
   createChat:boolean ,
-  setCreateChat:React.Dispatch<React.SetStateAction<boolean>> 
+  setCreateChat:React.Dispatch<React.SetStateAction<boolean>>  ,
+  showGroupInfo:boolean ,
+  setShowGroupInfo:React.Dispatch<React.SetStateAction<boolean>>  ,
+  addMembers:boolean ,
+  setShowAddMembers:React.Dispatch<React.SetStateAction<boolean>>  ,
   
 
 }
@@ -48,6 +52,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const[currentChat , setCurrentChat] = useState<Chat|null>(null)
   const[showMenu , setShowMenu] = useState<boolean>(false)
   const[createChat , setCreateChat] = useState<boolean>(false)
+  const[showGroupInfo , setShowGroupInfo] = useState<boolean>(false)
+  const[addMembers , setShowAddMembers] = useState<boolean>(false)
 
   const contextValue: AppContextType = {
     user,
@@ -69,7 +75,11 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     createChat ,
     setCreateChat ,
     filteredChats ,
-    setFilteredChats
+    setFilteredChats ,
+    showGroupInfo ,
+    setShowGroupInfo ,
+    addMembers , 
+    setShowAddMembers
 
   };
 

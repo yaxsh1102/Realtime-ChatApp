@@ -1,6 +1,5 @@
-import { createChatDTO } from './../dtos/one2one.dto';
 import { AuthenticatRequest } from '../middlewares/auth.middleware';
-import {Chat} from "../models/chat.schema"
+import {Chat, IChat} from "../models/chat.schema"
 import { User } from '../models/user.schema';
 import { ErrorResponseDTO } from '../dtos/error.dto';
 import { createGroupChatDTO } from '../dtos/createGroupChat.dto';
@@ -20,9 +19,10 @@ export const createChat = async(req: AuthenticatRequest<null>, res: Response)=>{
     try{
 
         const {id} = req.params;
+        console.log(id)
+        console.log(req.user.id)
         if(!id){
             errResponse.message="No Paramters Found"
-            
             return res.status(400).json(errResponse) ;
         }
 
@@ -34,14 +34,14 @@ export const createChat = async(req: AuthenticatRequest<null>, res: Response)=>{
             })
 
         }
-        let chat = await Chat.find({
+        let chat = await Chat.findOne({
             isGroupChat: false,
             $and: [
-              { users: { $elemMatch: { $eq: req.user.id } } },
-              { users: { $elemMatch: { $eq: id } } },
+              { members: { $elemMatch: { $eq: req.user.id } } },
+              { members: { $elemMatch: { $eq: id } } },
             ],
           })
-            .populate("users", "-password")
+            .populate("members", "-password")
             .populate({
               path: "latestMessage",
               populate: {
@@ -49,6 +49,8 @@ export const createChat = async(req: AuthenticatRequest<null>, res: Response)=>{
                 select: "name pic email",
               },
             });
+
+
 
 
             if(chat){
@@ -59,17 +61,40 @@ export const createChat = async(req: AuthenticatRequest<null>, res: Response)=>{
                 })
             } 
 
-            let newChat = await Chat.create({
+            let newChat:IChat = await Chat.create({
                 name:"one-to-one" ,
                 groupChat:false ,
                 members:[id , req.user.id] 
+            } )
+
+            const createdChat = await Chat.findOne({_id : newChat._id})
+            .populate({path:"members" , 
+                select:"name email avatar"
             })
+            .populate(
+                {
+                    path:"lastMessage" ,
+                    populate:{
+                        path:"sender" ,
+                        select:" avatar email name"
+                    }
+    
+    
+            })
+            .populate({path:"admin" ,  
+                select:"name email avatar"
+                })
+            .sort({updatedAt:-1})
+
+ 
+
+
 
 
             return res.status(200).json({
                 success:true ,
                 message:"New Chat Created" ,
-                data:newChat
+                data:createdChat
             })
 
 
@@ -157,7 +182,7 @@ export const createGroupChat = async(req:AuthenticatRequest<createGroupChatDTO> 
                     name:name ,
                     groupChat:true ,
                     admin:req.user.id ,
-                    memebers:members , 
+                    members:members , 
 
                 })
 
@@ -199,7 +224,6 @@ export const createGroupChat = async(req:AuthenticatRequest<createGroupChatDTO> 
 
 export const addToGroupChat = async(req:AuthenticatRequest<modifyGroupDTO> , res:Response)=>{
     try{
-
         const {member , group} = req.body 
         if(!member || !group){
             errResponse.message="Missing Parameters"
@@ -233,18 +257,23 @@ export const addToGroupChat = async(req:AuthenticatRequest<modifyGroupDTO> , res
             _id:groupExists._id
         }
         )
-        .populate("members -password")
+        .populate({
+            path:"members" ,
+            select:"name email avatar"
+        })
         .populate(
             {
                 path:"lastMessage" ,
                 populate:{
                     path:"sender" ,
-                    select:"username avatar email name"
+                    select:" avatar email name"
                 }
 
 
         })
-        .populate("admin -password")
+        .populate({path:"admin" ,  
+            select:"name email avatar"
+            }) 
         .sort({updatedAt:-1})
 
         const success :SuccessResponseDTO<typeof data>={
@@ -256,6 +285,7 @@ export const addToGroupChat = async(req:AuthenticatRequest<modifyGroupDTO> , res
 
 
     }catch(err){
+        console.log(err)
         errResponse.message="Error Occured"
         return res.status(500).json(errResponse)
 
@@ -285,24 +315,43 @@ export const removeFromGroupChat = async(req:AuthenticatRequest<modifyGroupDTO> 
             errResponse.message=="Only Admins Can Remove Members"
             return res.status(400).json(errResponse)
         }
-        //potential threats
 
 
         const objectID = new mongoose.Types.ObjectId(member)
 
         if(!groupExists.members.includes(objectID)){
-            errResponse.message="No Such USer Exists In Group"
+            errResponse.message="No Such User Exists In Group"
             return res.status(400).json(errResponse)
 
         }
 
         const newGroup = await Chat.findOneAndUpdate({_id :group} , {$pull:{members:objectID}} , {new:true})
+        .populate({
+            path:"members" ,
+            select:"name email avatar"
+        })
+        .populate(
+            {
+                path:"lastMessage" ,
+                populate:{
+                    path:"sender" ,
+                    select:" avatar email name"
+                }
+
+
+        })
+        .populate({path:"admin" ,  
+            select:"name email avatar"
+            }) 
+        .sort({updatedAt:-1})
 
         const success :SuccessResponseDTO<typeof newGroup>={
             success:true ,
             message:"Member Removed Successfully" ,
             data:newGroup
         }
+
+        return res.status(200).json(success)
 
 
            
@@ -410,6 +459,62 @@ export const getSearchResults = async(req:AuthenticatRequest<searchUserDTO> , re
 
     }
 
+}
+
+
+export const leaveGroup = async(req:AuthenticatRequest<modifyGroupDTO> , res:Response)=>{
+
+    try{
+
+        const { group} = req.body 
+        const id = req.user.id ;
+        if(!group){
+            errResponse.message="Missing Parameters"
+            return res.status(400).json(errResponse)
+        }
+
+        const groupExists = await Chat.findOne({_id:group , groupChat:true})
+                                                          .populate("admin")
+        if( !groupExists){
+            errResponse.message = ("No Such Group Exists")
+            return res.status(400).json(errResponse)
+        }
+
+       
+
+
+        const objectID = new mongoose.Types.ObjectId(id)
+
+        if(!groupExists.members.includes(objectID)){
+            errResponse.message="No Such User Exists In Group"
+            return res.status(400).json(errResponse)
+
+        }
+
+        if(groupExists.admin._id.toString()===id.toString()){
+            groupExists.members=groupExists.members.filter((member)=>member.toString()!==id.toString())
+            if(groupExists.members.length>0){
+                groupExists.admin=groupExists.members[0]
+            }
+        }
+
+
+        await groupExists.save()
+        const success :SuccessResponseDTO<null>={
+            success:true ,
+            message:"Exited Successfully" ,
+        }
+
+        return res.status(200).json(success)
+
+
+
+
+
+
+    }catch(err){
+
+    }
 }
 
 

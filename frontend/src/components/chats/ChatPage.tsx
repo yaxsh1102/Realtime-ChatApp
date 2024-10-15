@@ -3,6 +3,8 @@ import Message from './Message';
 import { IoMdSend } from "react-icons/io";
 import { useAppContext } from '../../context/AppContext';
 import Loader from '../miscellaneous/Loader';
+import { CiCircleInfo } from "react-icons/ci";
+
 
 const ChatPage: React.FC = () => {
   const messageInputRef = useRef<HTMLInputElement>(null);
@@ -16,6 +18,8 @@ const ChatPage: React.FC = () => {
     loader,
     currentChat,
     setLoader,
+    setShowGroupInfo ,
+    
     user
   } = useAppContext();
 
@@ -102,14 +106,22 @@ useEffect(() => {
 
   return (
     <div className='w-full h-screen flex flex-col bg-gradient-to-tr from-[#1c1e22] to-[#434445]'>
-      <div className='h-16 min-h-[4rem] bg-[#262729] flex items-center text-2xl px-4 gap-x-4 border-b-[0.1px] border-slate-700'>
+      <div className='  h-16 min-h-[4rem] bg-[#262729] flex items-center text-2xl  border-b-[0.1px] border-slate-700 justify-between px-4'>
+        <div className='flex gap-x-4'>
         <img
           src={"https://api.multiavatar.com/mann%20male.svg"}
           className='h-10 w-10 rounded-full'
           alt={`${currentChat?.name}'s Avatar`}
         />
         <p className='text-white'>{currentChat?.members[0].name}</p>
+        </div>
+        {currentChat.groupChat && 
+        <p className='hover:cursor-pointer' onClick={()=>{setShowGroupInfo(true)}}>
+        <CiCircleInfo fill="white"></CiCircleInfo>
+      </p>
+      }
       </div>
+      
 
       <div
         ref={messagesContainerRef}

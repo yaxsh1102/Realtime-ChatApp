@@ -3,29 +3,31 @@ import { MdCancel } from 'react-icons/md';
 import GroupParticipants from '../group/GroupParticipants';
 import { useAppContext } from '../../context/AppContext';
 import { useDebounce } from '../hooks/useDebounce';
+import { User } from '../../interfaces/interfaces';
 
-interface User {
-  id: number;
-  name: string;
-}
+
 
 const CreateChat: React.FC = () => {
-  const [isGroupChat, setIsGroupChat] = useState<boolean>(false);
+  const { setCreateChat , user , setChats  , chats , addMembers , currentChat , setShowAddMembers , setCurrentChat } = useAppContext();
+  
+
+  const [isGroupChat, setIsGroupChat] = useState<boolean>(addMembers ? true :false);
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const debouncedSearchTerm = useDebounce(searchTerm, 1500);
+  const [groupName,setGroupName] = useState<string>('');
+  const debouncedSearchTerm = useDebounce(searchTerm, isGroupChat? 0 :1500);
   const [searchResults, setSearchResults] = useState<User[]>([]);
+  const [selectedMembers, setSelectedMembers] = useState<User[]>(addMembers ? [] : [user as User]);
   const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false); // Added loading state
-  const { setCreateChat } = useAppContext();
+  const [loading, setLoading] = useState<boolean>(false); 
 
   useEffect(() => {
     if (searchTerm.length > 0) {
-      setIsDropdownVisible(true); // Show dropdown when typing starts
-      setLoading(true); // Set loading to true immediately when typing starts
+      setIsDropdownVisible(true);
+      setLoading(true);
     } else {
-      setIsDropdownVisible(false); // Hide dropdown if search term is empty
+      setIsDropdownVisible(false);
       setSearchResults([]);
-      setLoading(false); // No need to show loading if there's no search term
+      setLoading(false); 
     }
   }, [searchTerm]);
 
@@ -40,41 +42,172 @@ const CreateChat: React.FC = () => {
   };
 
   const handleUserSelect = (user: User) => {
-    console.log('Selected user:', user);
+    if(!isGroupChat && selectedMembers.length===2){
+      setIsDropdownVisible(false);
+      setSearchTerm('');
+
+      return 
+
+    }
     setSearchTerm('');
+    setSelectedMembers([...selectedMembers , user])
     setIsDropdownVisible(false);
   };
 
-  async function handleSearch(name: string) {
-    try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}chat/get-search-results`, {
-        method: "POST",
-        headers: {
-          "Content-type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ name }),
-      });
+  function removeMemberHandler(user:User){
+    const filteredmembers = selectedMembers.filter((member)=>member._id!==user._id)
+    setSelectedMembers(filteredmembers)
 
-      const data = await response.json();
-      console.log(data)
-      setSearchResults(data);
-      setLoading(false); 
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      setSearchResults([]);
+  }
+
+  async function handleSearch(name: string) {
+    if (isGroupChat) {
+      const filteredResults = chats
+  .flatMap(chat => chat.members)  
+  .filter(member => member.name.toLowerCase().includes(name.toLowerCase())) 
+  .filter(member => !selectedMembers.some(selected => selected._id === member._id));
+
+setSearchResults(filteredResults); 
+
       setLoading(false);
+      console.log("hiee")
+    } else {
+      try {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}chat/get-search-results`, {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ name }),
+        });
+  
+        const data = await response.json();
+        setSearchResults(data.data);
+        setLoading(false); 
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        setSearchResults([]);
+        setLoading(false);
+      }
     }
   }
+  
+
+  async function createOnetoOneChat (){
+
+    if(selectedMembers.length!==2){
+      return 
+
+    }
+
+    console.log("hii")
+    try{
+    const data = await fetch(`${process.env.REACT_APP_BACKEND_URL}chat/create-chat/${selectedMembers[1]._id}` , {
+      method:"GET" ,
+      headers:{
+        "content-type":"application/json" ,
+        "Authorization":`Bearer ${localStorage.getItem("token")}`
+      }
+    })
+    const resp = await data.json()
+    if(resp.success){
+      setChats([...chats , resp.data])
+    }
+    setIsDropdownVisible(false)
+    setSearchTerm("")
+    setCreateChat(false)
+    console.log(resp)
+
+    
+  }catch(err){
+    console.log(err)
+
+  }
+}
+async function createGroupChat (){
+
+  if(selectedMembers.length<2 || groupName.trim().length===0){
+    console.log(selectedMembers)
+    console.log(groupName)
+    console.log("eww")
+    return 
+
+  }
+
+  const ids = selectedMembers.map(member => member._id);
+  try{
+  const data = await fetch(`${process.env.REACT_APP_BACKEND_URL}chat/create-group-chat`, {
+    method:"POST" ,
+    headers:{
+      "content-type":"application/json" ,
+      "Authorization":`Bearer ${localStorage.getItem("token")}`
+    }
+     , body:JSON.stringify({name:groupName , members:ids})
+  })
+  const resp = await data.json()
+  console.log(resp)
+  if(resp.success){
+    setChats([...chats , resp.data])
+  }
+  setIsDropdownVisible(false)
+  setSearchTerm("")
+  setCreateChat(false)
+
+  
+}catch(err){
+console.log(err)
+}
+}
+
+async function addToGroup (){
+
+  if(selectedMembers.length===0 ){
+    console.log(selectedMembers)
+    console.log(groupName)
+    console.log("eww")
+    return 
+
+  }
+
+  const id = selectedMembers[0]._id;
+  try{
+  const data = await fetch(`${process.env.REACT_APP_BACKEND_URL}chat/add-to-group`, {
+    method:"POST" ,
+    headers:{
+      "content-type":"application/json" ,
+      "Authorization":`Bearer ${localStorage.getItem("token")}`
+    }
+     , body:JSON.stringify({group:currentChat?._id , member:id})
+  })
+  const resp = await data.json()
+  console.log(resp)
+  if(resp.success){
+    const newChats = chats.filter((chat)=>chat._id!==currentChat?._id)
+    setChats([...newChats , resp.data])
+    setCurrentChat(resp.data)
+  
+  }
+  setIsDropdownVisible(false)
+  setSearchTerm("")
+  setShowAddMembers(false)
+  setCreateChat(false)
+
+
+  
+}catch(err){
+console.log(err)
+}
+}
 
   return (
     <div className="sm:w-[40rem] w-[23rem] bg-[#262729] h-full sm:p-6 p-4 flex flex-col">
-      <div className="mb-4">
+     {!addMembers &&  <div className="mb-4">
         <label className="inline-flex items-center cursor-pointer">
           <input
             type="checkbox"
             checked={isGroupChat}
-            onChange={() => setIsGroupChat(!isGroupChat)}
+            onChange={() => {setIsGroupChat(!isGroupChat) ; setSelectedMembers([user as User])}}
             className="sr-only peer"
           />
           <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
@@ -83,6 +216,7 @@ const CreateChat: React.FC = () => {
           </span>
         </label>
       </div>
+}
 
       <div className="relative mb-4 flex justify-center">
         <input
@@ -100,11 +234,11 @@ const CreateChat: React.FC = () => {
             ) : searchResults.length > 0 ? (
               searchResults.map((user) => (
                 <div
-                  key={user.id}
+                  key={user._id}
                   onClick={() => handleUserSelect(user)}
                   className="px-4 py-2 cursor-pointer hover:bg-gray-100"
                 >
-                  <GroupParticipants></GroupParticipants>
+                  <GroupParticipants member={user} isSearchResult={true}></GroupParticipants> 
                 </div>
               ))
             ) : (
@@ -114,40 +248,78 @@ const CreateChat: React.FC = () => {
         )}
       </div>
 
-      {isGroupChat && (
+       
         <div className="flex flex-col flex-grow">
           <p className="text-white mb-2">Members</p>
           <div className="flex-grow overflow-x-auto no-scrollbar">
             <div className="flex space-x-2 pb-2">
-              {[...Array(6)].map((_, index) => (
+              {selectedMembers.map((member, index) => (
                 <div
                   key={index}
-                  className="flex-shrink-0 bg-slate-700 flex justify-between items-center w-[8rem] sm:w-[8.4rem] h-12 rounded-full border-4 border-black relative px-2"
+                  className="flex-shrink-0 bg-slate-700 flex justify-between items-center max-w-[8rem] max-w-sm:w-[8.4rem] h-12 rounded-full border-4 border-black relative px-2 gap-x-2"
                 >
                   <img
-                    src={`https://api.multiavatar.com/avatar${index + 1}.svg`}
+                    src={member.avatar}
                     alt=""
                     className="w-8 h-8"
                   />
-                  <p className="text-sm text-slate-300 truncate">Ghanshyam</p>
-                  <button className="absolute -bottom-1 right-0 focus:outline-none">
+                  <p className="text-sm text-slate-300 truncate">{member.name}</p>
+                  { member._id !== user?._id && <button className="absolute -bottom-1 right-0 focus:outline-none" onClick={()=>{removeMemberHandler(member)}}>
                     <MdCancel fill="white" />
                   </button>
+}
                 </div>
               ))}
             </div>
           </div>
         </div>
-      )}
 
-      <div className="w-full flex justify-between mt-4">
-        <button className="w-[48%] h-8 bg-indigo-600 text-white rounded">
-          Create
-        </button>
-        <button className="w-[48%] h-8 bg-slate-800 text-white rounded">
+   { isGroupChat && !addMembers &&       <div className='w-full'>
+        <input
+          type="text"
+          placeholder="Enter Group Name.."
+          value={groupName}
+          onChange={(e: ChangeEvent<HTMLInputElement>)=>{
+            setGroupName(e.target.value)
+
+          }}
+          className="md:w-full w-[100%] mx-auto px-4 py-2 focus:outline-none text-slate-400 h-8 bg-[#2e3033] border-b-[0.5px] border-b-white focus:border-b-[1px] focus:border-indigo-600"
+        />
+
+        </div>
+}
+      
+
+    <div className="w-full flex justify-between mt-4">
+
+      { !addMembers ? (
+        <>
+            <button 
+              className="w-[48%] h-8 bg-indigo-600 text-white rounded" 
+              onClick={() => {
+                isGroupChat ? createGroupChat() : createOnetoOneChat();
+        }}
+      >
+                  Create
+      </button>
+          
+        <button className="w-[48%] h-8 bg-slate-800 text-white rounded" onClick={()=>{setCreateChat(false)}}>
           Cancel
         </button>
+        </>
+      ) :( <button 
+        className="w-[48%] h-8 bg-indigo-600 text-white rounded" 
+        onClick={() => {
+          addToGroup()
+  }}
+>
+
+  Add
+            
+</button>)
+}
       </div>
+
     </div>
   );
 };

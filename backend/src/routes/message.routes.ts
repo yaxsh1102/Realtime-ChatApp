@@ -17,7 +17,7 @@ const sendMessageHander = (req:Request<{} , {} , contentDTO> , res:Response)=>{
 const getMessagesHandler = (req:Request<{} , {} , null> , res:Response)=>{
     getMessages(req as AuthenticatRequest<null> , res)
 }
-
+ 
 
 
 router.get("/get-messages/:chatId" , AuthenticatedUser as RequestHandler ,getMessagesHandler )
