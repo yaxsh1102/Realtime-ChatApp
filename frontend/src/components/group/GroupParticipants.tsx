@@ -2,6 +2,8 @@ import React from 'react'
 import { MdDeleteForever } from 'react-icons/md'
 import { User } from '../../interfaces/interfaces'
 import { useAppContext } from '../../context/AppContext'
+import { IoMdExit } from "react-icons/io";
+
 interface GroupParticpantProp{
 member:User ,
 isSearchResult?:boolean ,
@@ -12,7 +14,7 @@ isAdmin?:boolean
 
 
 const GroupParticipants = ({member , isSearchResult=false , isAdmin=false}:GroupParticpantProp) => {
-const {user , currentChat , chats , setChats , setCurrentChat} = useAppContext()
+const {user , currentChat , chats , setChats , setCurrentChat , setShowGroupInfo} = useAppContext()
 
 
 async function removeFromGroupHandler(){
@@ -46,6 +48,33 @@ async function removeFromGroupHandler(){
 
 }
 
+async function leaveGroupHandler(){
+  try{
+    const data = await fetch(`${process.env.REACT_APP_BACKEND_URL}chat/leave-group`, {
+      method:"POST" ,
+      headers:{
+        "content-type":"application/json" ,
+        "Authorization":`Bearer ${localStorage.getItem("token")}`
+      }
+       , body:JSON.stringify({group:currentChat?._id })
+    }) 
+    console.log("hiiiiii")
+    const resp = await data.json()
+    console.log(resp)
+      const newChats = chats.filter((chat)=>chat._id!==currentChat?._id)
+      setShowGroupInfo(false)
+
+      setChats(newChats)
+      setCurrentChat(null) 
+    console.log(1212122)
+
+  }catch(err){
+  console.log(err)
+  } 
+
+
+}
+
  
   return (
     <div className='w-full border-b-[0.1px] border-b-slate-700'>
@@ -61,7 +90,7 @@ async function removeFromGroupHandler(){
                 <p className='text-xs '>{member?.email}</p>
             </div>
 
-           {currentChat?.admin?._id===user?._id &&<p onClick={removeFromGroupHandler} className='hover:cursor-pointer'> <MdDeleteForever className='w-8 h-8'/></p> }
+           {currentChat?.admin?._id===user?._id && (member._id===currentChat?.admin?._id ? (<p onClick={leaveGroupHandler}><IoMdExit className='w-8 h-8'></IoMdExit></p>) :(<p><MdDeleteForever className='w-8 h-8' onClick={removeFromGroupHandler}></MdDeleteForever></p>) ) }
 
 
             </div>  

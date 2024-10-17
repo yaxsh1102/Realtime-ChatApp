@@ -8,6 +8,7 @@ import { modifyGroupDTO } from "../dtos/modifyGroup.dto";
 import { addToGroupChat } from "../controllers/chat.controller";
 import { searchUserDTO } from "../dtos/searchuser.dto";
 import { leaveGroup } from "../controllers/chat.controller";
+import { deleteGroupChat } from "../controllers/chat.controller";
 
 const router = express.Router();
 
@@ -34,6 +35,10 @@ const getGroupChats = (req:Request<{}, {} , null> , res:Response)=>{
     getGroupChatDetails(req as AuthenticatRequest<null> , res )
 }
 
+const deleteGroupChathandler =(req:Request<{} , {} , modifyGroupDTO> , res:Response)=>{
+    deleteGroupChat(req as AuthenticatRequest<modifyGroupDTO> , res )
+}
+
 const getSearchResultsHandler = (req:Request<{}, {} , searchUserDTO> , res:Response)=>{
     getSearchResults(req as AuthenticatRequest<searchUserDTO> , res )
 }
@@ -47,6 +52,8 @@ router.post("/create-group-chat" , AuthenticatedUser as RequestHandler , createG
 router.post("/add-to-group" ,AuthenticatedUser as RequestHandler ,  addToGroupHandler)
 router.post("/remove-from-group" , AuthenticatedUser as RequestHandler , removeFromGroupHandler)
 router.post("/get-search-results" , AuthenticatedUser as RequestHandler , getSearchResultsHandler)
-router.post("/exit-group" ,AuthenticatedUser as RequestHandler ,leaveGroupChatHandler  )
+router.post("/leave-group" ,AuthenticatedUser as RequestHandler ,leaveGroupChatHandler  )
+router.post("/delete-group" ,AuthenticatedUser as RequestHandler ,deleteGroupChathandler  )
+
 
 export default router;

@@ -8,12 +8,21 @@ import { modifyGroupDTO } from '../dtos/modifyGroup.dto';
 import mongoose  from 'mongoose';
 import { SuccessResponseDTO } from './../dtos/success.dto';
 import { searchUserDTO } from '../dtos/searchuser.dto';
+import { emitSocketEvent } from '../socket';
 
 let errResponse:ErrorResponseDTO={
     success:false ,
     message:""
 }
-
+interface SocketEventPayload {
+    name: string;
+    groupChat: boolean;
+    admin: string;
+    members: string[];
+    _id: string; 
+    __v?: number; 
+  }
+  
 
 export const createChat = async(req: AuthenticatRequest<null>, res: Response)=>{
     try{
@@ -85,6 +94,21 @@ export const createChat = async(req: AuthenticatRequest<null>, res: Response)=>{
                 select:"name email avatar"
                 })
             .sort({updatedAt:-1})
+
+          
+
+            if (createdChat) {
+                const plainChat = createdChat.toObject();
+
+                emitSocketEvent<typeof plainChat>(
+                    req,
+                    id,
+                    "NEW_CHAT",
+                    plainChat
+                  );
+              } else {
+                console.log("Chat creation failed: createdChat is null.");
+              }
 
  
 
@@ -176,6 +200,8 @@ export const createGroupChat = async(req:AuthenticatRequest<createGroupChatDTO> 
                     errResponse.message="All Fields Are Required"
                     return res.status(400).json(errResponse)
                 }
+           
+
 
 
                 const data = await Chat.create({
@@ -215,6 +241,7 @@ export const createGroupChat = async(req:AuthenticatRequest<createGroupChatDTO> 
 
 
              }catch(err){
+                console.log(err)
                 errResponse.message="Error  Occured"
                 return res.status(500).json(errResponse)
 
@@ -368,7 +395,7 @@ export const deleteGroupChat =async(req:AuthenticatRequest<modifyGroupDTO> ,res:
         const {group} = req.body ;
 
         if(!group){
-            errResponse.message="Missing Paramter"
+            errResponse.message="Missing Parameter"
             return res.status(400).json(errResponse)
         }
 
@@ -490,9 +517,10 @@ export const leaveGroup = async(req:AuthenticatRequest<modifyGroupDTO> , res:Res
             return res.status(400).json(errResponse)
 
         }
+        groupExists.members=groupExists.members.filter((member)=>member._id.toString()!==(id.toString()))
 
-        if(groupExists.admin._id.toString()===id.toString()){
-            groupExists.members=groupExists.members.filter((member)=>member.toString()!==id.toString())
+
+        if(groupExists.admin._id.toString()===(id.toString())){
             if(groupExists.members.length>0){
                 groupExists.admin=groupExists.members[0]
             }

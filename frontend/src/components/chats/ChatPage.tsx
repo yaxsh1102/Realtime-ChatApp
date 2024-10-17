@@ -4,7 +4,7 @@ import { IoMdSend } from "react-icons/io";
 import { useAppContext } from '../../context/AppContext';
 import Loader from '../miscellaneous/Loader';
 import { CiCircleInfo } from "react-icons/ci";
-
+import socket from '../../socket';
 
 const ChatPage: React.FC = () => {
   const messageInputRef = useRef<HTMLInputElement>(null);
@@ -79,6 +79,7 @@ useEffect(() => {
     if (!currentChat || !messageInputRef.current) {
       return;
     }
+    socket.emit("messageSent" ,)
 
     try {
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}message/send-message/${currentChat._id}`, {

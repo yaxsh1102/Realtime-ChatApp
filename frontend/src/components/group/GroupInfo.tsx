@@ -4,6 +4,8 @@ import { MdDeleteForever } from "react-icons/md";
 import { IoMdClose } from "react-icons/io";
 import React, { Dispatch, SetStateAction } from 'react';
 import { useAppContext } from '../../context/AppContext';
+import { IoMdExit } from "react-icons/io";
+
 
 
 const GroupInfo = () => {
@@ -23,7 +25,9 @@ async function leaveGroupHandler(){
     const resp = await data.json()
     console.log(resp)
       const newChats = chats.filter((chat)=>chat._id!==currentChat?._id)
-      setChats([...newChats , resp.data])
+      setShowGroupInfo(false)
+
+      setChats(newChats)
       setCurrentChat(null) 
     console.log(1212122)
 
@@ -31,6 +35,32 @@ async function leaveGroupHandler(){
   console.log(err)
   } 
 
+
+}
+
+async function deleteGroupHandler(){
+  try{
+    const data = await fetch(`${process.env.REACT_APP_BACKEND_URL}chat/delete-group`, {
+      method:"POST" ,
+      headers:{
+        "content-type":"application/json" ,
+        "Authorization":`Bearer ${localStorage.getItem("token")}`
+      }
+       , body:JSON.stringify({group:currentChat?._id })
+    }) 
+    console.log("hiiiiii")
+    const resp = await data.json()
+    console.log(resp)
+      const newChats = chats.filter((chat)=>chat._id!==currentChat?._id)
+      setShowGroupInfo(false)
+
+      setChats(newChats)
+      setCurrentChat(null) 
+    console.log(1212122)
+
+  }catch(err){
+  console.log(err)
+  }
 
 }
 
@@ -69,12 +99,12 @@ async function leaveGroupHandler(){
           <><button className="bg-blue-500 text-white py-2 px-4 rounded" onClick={()=>{setCreateChat(true) ;setShowAddMembers(true) }}>
             Add Participant
           </button>
-          <button className="bg-red-500 text-white py-2 px-4 rounded flex items-center justify-center">
+          <button className="bg-red-500 text-white py-2 px-4 rounded flex items-center justify-center" onClick={deleteGroupHandler}>
             <MdDeleteForever className="mr-2" />
             Delete Group
           </button>
           </>) : ( <><button className="bg-red-500 text-white py-2 px-4 rounded flex items-center justify-center" onClick={leaveGroupHandler}>
-            <MdDeleteForever className="mr-2" />
+            <IoMdExit className="mr-2" />
             Leave Group
           </button>
           </>)

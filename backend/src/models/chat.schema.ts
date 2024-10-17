@@ -10,6 +10,11 @@ export interface IChat extends Document{
 
 }
 
+type SocketEventPayload = Omit<IChat, '_id' | '__v'> & {
+    _id: string; 
+    __v?: number;
+  };
+
 
 const chatSchema = new mongoose.Schema<IChat>({
     name:{
