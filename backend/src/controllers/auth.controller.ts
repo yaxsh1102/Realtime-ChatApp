@@ -10,9 +10,9 @@ import jwt from "jsonwebtoken"
 
 export const signup  = async (req: Request<{} , {} , SignupDTO>, res: Response):Promise<Response> => {
   try {
-    const { name, username, email, password } = req.body;
+    const { name, email, password } = req.body;
 
-    if (!name  ||  !username  || !email || !password) {
+    if (!name    || !email || !password) {
       const errorResponse: ErrorResponseDTO = {
         success: false,
         message: 'All fields (name, username, email, password) are required.',
@@ -20,7 +20,7 @@ export const signup  = async (req: Request<{} , {} , SignupDTO>, res: Response):
       return res.status(400).json(errorResponse);
     }
 
-    const existingUser = await User.findOne({$or:[{name:name} , {username:username}]})
+    const existingUser = await User.findOne({email:email})
 
     if(existingUser){
         const errorResponse: ErrorResponseDTO = {
@@ -39,7 +39,6 @@ export const signup  = async (req: Request<{} , {} , SignupDTO>, res: Response):
         email ,
         password:hashedPassword ,
         avatar:"ht" ,
-        username
 
 
     })
@@ -111,7 +110,8 @@ export const login  = async(req:Request<{} ,{} ,LoginDTO > , res:Response): Prom
         const userData = {
           name:user.name ,
           email:user.email ,
-          avatar:user.avatar
+          avatar:user.avatar , 
+          _id:user._id
         }
         const data = {user:userData , token:token}
 

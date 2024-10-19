@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface FormData {
   name:string
@@ -7,6 +8,7 @@ interface FormData {
 }
 
 const Signup: React.FC = () => {
+  const navigate = useNavigate()
   const [formData, setFormData] = useState<FormData>({
     name:"" ,
     email: '',
@@ -30,8 +32,9 @@ const Signup: React.FC = () => {
   };
 
   async function signup( name:string , email: string, password: string ,) {
+    console.log(process.env.REACT_APP_BACKEND_URL)
     try {
-      const response = await fetch(process.env.BACKENDURL as string +"auth/signup", {
+      const response = await fetch(process.env.REACT_APP_BACKEND_URL as string +"auth/signup", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -40,9 +43,10 @@ const Signup: React.FC = () => {
       });
 
       const resp = await response.json();
+      console.log(resp)
 
       if (resp.success) {
-        localStorage.setItem('token', resp.token);
+        navigate("/login")
       }
     } catch (err) {
       console.error('Login error:', err);
@@ -66,7 +70,7 @@ const Signup: React.FC = () => {
               required
               placeholder="Enter your name"
               className="w-full px-3 py-2 mt-1 text-white bg-gray-700 border border-gray-600 rounded-sm border-b-[2px] border-b-indigo-500 outline-none"
-              value={formData.email}
+              value={formData.name}
               onChange={handleChange}
             />
           </div>
@@ -106,7 +110,7 @@ const Signup: React.FC = () => {
           className="w-full px-4 py-2 font-bold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out mt-16"
           onClick={loginHandler}
         >
-          Login
+          Signup
         </button>
 
         <div className="relative my-6">
@@ -121,9 +125,9 @@ const Signup: React.FC = () => {
 
         <div className="mt-6 text-center text-gray-400">
           <p>
-            Don't have an account?{' '}
-            <span className="font-medium text-indigo-400 hover:text-indigo-300 cursor-pointer">
-              Sign Up
+            Already have an account?{' '}
+            <span className="font-medium text-indigo-400 hover:text-indigo-300 cursor-pointer" onClick={()=>{navigate("/login")}}>
+              Log In
             </span>
           </p>
         </div>

@@ -5,6 +5,7 @@ import { useAppContext } from '../../context/AppContext';
 import Loader from '../miscellaneous/Loader';
 import { CiCircleInfo } from "react-icons/ci";
 import socket from '../../socket';
+import { Message as MessageType } from '../../interfaces/interfaces';
 
 const ChatPage: React.FC = () => {
   const messageInputRef = useRef<HTMLInputElement>(null);
@@ -22,6 +23,10 @@ const ChatPage: React.FC = () => {
     
     user
   } = useAppContext();
+
+
+
+
 
 
 const scrollToBottom = useCallback(() => {
@@ -79,7 +84,13 @@ useEffect(() => {
     if (!currentChat || !messageInputRef.current) {
       return;
     }
-    // socket.emit("messageSent" ,)
+    const data = {
+      chat:currentChat , 
+      sender:user , 
+      content:messageInputRef.current.value
+    }
+    console.log(data)
+    socket.emit("newMessage" ,data)
 
     try {
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}message/send-message/${currentChat._id}`, {
@@ -88,11 +99,11 @@ useEffect(() => {
           "Content-type": "application/json",
           "Authorization": `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({ content:  messageInputRef.current.value })
-      });
+        body: JSON.stringify({ content:  messageInputRef.current.value }) 
+      }); 
 
       const resp = await response.json();
-      console.log(resp);
+      console.log(resp); 
       setCurrentMessages(resp.data); 
       messageInputRef.current.value = '';
       setTimeout(scrollToBottom , 100)
@@ -100,10 +111,43 @@ useEffect(() => {
       console.error('Error sending message:', error);
     }
   };
+   
+  
+  useEffect(() => {
+    // Socket event listener setup
+    const handleMessageReceive = (data: MessageType) => { 
+      console.log('Message received:', data);
+      setCurrentMessages(prev => [...prev, data]);
+    };
+  
+    // Add event listener
+    socket.on("receiveMessage", handleMessageReceive);
+  
+    // Cleanup function to remove event listener
+    return () => {
+      socket.off("receiveMessage", handleMessageReceive);
+    };
+  }, [])
+  
+ 
+  
+  
+  
+   
 
   if (!currentChat) {
     return <div>Chat with your friends</div>;
   }
+
+  const name = currentChat.groupChat ? (currentChat.name):(currentChat
+    .members[0]._id===user?._id ? (currentChat.members[1].name):(currentChat
+      .members[0].name
+  ))
+
+  console.log(name)
+ 
+
+ 
 
   return (
     <div className='w-full h-screen flex flex-col bg-gradient-to-tr from-[#1c1e22] to-[#434445]'>
@@ -111,11 +155,11 @@ useEffect(() => {
         <div className='flex gap-x-4'>
         <img
           src={"https://api.multiavatar.com/mann%20male.svg"}
-          className='h-10 w-10 rounded-full'
+          className='h-10 w-10 rounded-full' 
           alt={`${currentChat?.name}'s Avatar`}
         />
-        <p className='text-white'>{!currentChat.groupChat ? ( currentChat?.members[0].name) :(currentChat.name)}</p>
-        </div>
+        <p className='text-white'>{name}</p>
+        </div>  
         {currentChat.groupChat && 
         <p className='hover:cursor-pointer' onClick={()=>{setShowGroupInfo(true)}}>
         <CiCircleInfo fill="white"></CiCircleInfo>
@@ -128,7 +172,7 @@ useEffect(() => {
         ref={messagesContainerRef}
         className='flex-grow overflow-y-auto p-4 no-scrollbar'
       >
-        {currentMessages && currentMessages.map((message) => (
+        {currentMessages && currentMessages.length>0 &&  currentMessages.map((message) => (
           <Message
             isRight={message.sender._id === user?._id}
             content={message.content}

@@ -9,7 +9,6 @@ import { useEffect } from 'react';
 import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import socket from '../../socket';
-
 const Home = () => {
 
 
@@ -21,12 +20,14 @@ const Home = () => {
     throw new Error('AppContext must be used within an AppProvider');
   }
   const groupInfoRef = useRef<HTMLDivElement>(null);
+  const initializeRef = useRef(false);
+
+
   
 
 
   const { setChats  , setLoader , createChat  , showMenu  , showGroupInfo  , user} = appContext;
   console.log(user)
-  socket.emit("initializeUser" , )
 
   if(!localStorage.getItem("token")){
     navigate("/login")
@@ -56,6 +57,20 @@ const Home = () => {
     getChats()
 
   } , [])
+  console.log(user)
+
+  useEffect(() => {
+    if (user?._id && !initializeRef.current) {
+      socket.emit("initializeUser", user._id);
+      initializeRef.current = true; 
+      
+      console.log('Socket initialized for user:', user._id);
+    }
+
+    return () => {
+      initializeRef.current = false;
+    };
+  }, [user?._id]);
 
  
   return (

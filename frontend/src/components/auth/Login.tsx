@@ -114,7 +114,7 @@ const Login: React.FC = () => {
         <div className="mt-6 text-center text-gray-400">
           <p>
             Don't have an account?{' '}
-            <span className="font-medium text-indigo-400 hover:text-indigo-300 cursor-pointer">
+            <span className="font-medium text-indigo-400 hover:text-indigo-300 cursor-pointer" onClick={()=>{navigate("/signup")}}>
               Sign Up
             </span>
           </p>

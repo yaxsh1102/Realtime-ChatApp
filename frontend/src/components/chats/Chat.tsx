@@ -12,9 +12,13 @@ interface ChatComponentProps {
 
 
 const ChatComponent:React.FC<ChatComponentProps> = ({chat}) => {
+  const {user} = useAppContext()
    const {setCurrentChat} = useAppContext()
    const dateStr = chat.lastMessage?.createdAt +""
    const formattedTime = extractTime(dateStr);
+   const name = chat.groupChat ? (chat.name):(chat.members[0]._id===user?._id ? (chat.members[1].name):(chat.members[0].name
+   ))
+
 
 
   return (
@@ -24,7 +28,7 @@ const ChatComponent:React.FC<ChatComponentProps> = ({chat}) => {
                 <img src={!chat.groupChat ? (chat.members[1].avatar) :("group.png.png")} height={16} width={16} className='lg:h-12 lg:w-12 md:h-8 md:w-8 h-12 w-12' alt="" />
             <div className='flex flex-col px-4 w-full'>
                 <div className='flex justify-between w-full items-center'>
-                <p>{!chat.groupChat ? chat.members[0].name : chat.name}</p>
+                <p>{name}</p>
                 <p className='text-xs'>{chat.lastMessage? (formattedTime):  ""}</p>
                 </div> 
 
