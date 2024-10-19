@@ -68,8 +68,9 @@ export const signup  = async (req: Request<{} , {} , SignupDTO>, res: Response):
 export const login  = async(req:Request<{} ,{} ,LoginDTO > , res:Response): Promise<Response> =>{
 
     try{
-        const {username , email , password}=req.body 
-        if((!username && !email) && !password ){
+        const { email , password}=req.body
+        console.log(email , password) 
+        if( !email||  !password ){
             const errorResponse: ErrorResponseDTO = {
                 success: false,
                 message: 'All fields (name, username, email, password) are required.',
@@ -79,14 +80,9 @@ export const login  = async(req:Request<{} ,{} ,LoginDTO > , res:Response): Prom
 
         
 
-    let user =null;
-    if(email){
-        user = await User.findOne({email:email})
-    } else {
-        user = await User.findOne({username:username})
-
-
-    }
+  
+       const  user = await User.findOne({email:email})
+   
 
     if(!user){
         const errorResponse: ErrorResponseDTO = {
@@ -112,14 +108,20 @@ export const login  = async(req:Request<{} ,{} ,LoginDTO > , res:Response): Prom
             expiresIn:"2h"
 
         })
+        const userData = {
+          name:user.name ,
+          email:user.email ,
+          avatar:user.avatar
+        }
+        const data = {user:userData , token:token}
 
        
     
-        const successResponse :SuccessResponseDTO<{}> ={
+        const successResponse :SuccessResponseDTO<typeof data> ={
 
             success:true ,
             message:"User Registered Successfully",
-            data:{token:token}
+            data:data
     
         }
 
@@ -129,6 +131,7 @@ export const login  = async(req:Request<{} ,{} ,LoginDTO > , res:Response): Prom
     
 
     }catch(err){
+      console.log(err)
         const errorResponse: ErrorResponseDTO = {
             success: false,
             message: 'An unexpected error occurred. Please try again later.',

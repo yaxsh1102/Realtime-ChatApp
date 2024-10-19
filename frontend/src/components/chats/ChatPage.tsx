@@ -79,7 +79,7 @@ useEffect(() => {
     if (!currentChat || !messageInputRef.current) {
       return;
     }
-    socket.emit("messageSent" ,)
+    // socket.emit("messageSent" ,)
 
     try {
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}message/send-message/${currentChat._id}`, {
@@ -114,7 +114,7 @@ useEffect(() => {
           className='h-10 w-10 rounded-full'
           alt={`${currentChat?.name}'s Avatar`}
         />
-        <p className='text-white'>{currentChat?.members[0].name}</p>
+        <p className='text-white'>{!currentChat.groupChat ? ( currentChat?.members[0].name) :(currentChat.name)}</p>
         </div>
         {currentChat.groupChat && 
         <p className='hover:cursor-pointer' onClick={()=>{setShowGroupInfo(true)}}>

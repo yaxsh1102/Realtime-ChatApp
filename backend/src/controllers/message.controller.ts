@@ -104,6 +104,7 @@ export const sendMessage = async(req:AuthenticatRequest<contentDTO> , res:Respon
 
 
 
+
                     if (!newMessage) {
                     errResponse.message = "Message creation failed";
                     return res.status(500).json(errResponse);

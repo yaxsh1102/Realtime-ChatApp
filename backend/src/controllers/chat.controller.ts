@@ -8,7 +8,6 @@ import { modifyGroupDTO } from '../dtos/modifyGroup.dto';
 import mongoose  from 'mongoose';
 import { SuccessResponseDTO } from './../dtos/success.dto';
 import { searchUserDTO } from '../dtos/searchuser.dto';
-import { emitSocketEvent } from '../socket';
 
 let errResponse:ErrorResponseDTO={
     success:false ,
@@ -97,23 +96,7 @@ export const createChat = async(req: AuthenticatRequest<null>, res: Response)=>{
 
           
 
-            if (createdChat) {
-                const plainChat = createdChat.toObject();
-
-                emitSocketEvent<typeof plainChat>(
-                    req,
-                    id,
-                    "NEW_CHAT",
-                    plainChat
-                  );
-              } else {
-                console.log("Chat creation failed: createdChat is null.");
-              }
-
- 
-
-
-
+          
 
             return res.status(200).json({
                 success:true ,
@@ -227,6 +210,9 @@ export const createGroupChat = async(req:AuthenticatRequest<createGroupChatDTO> 
                                                                     select:"username name avatar email"
                                                                 })
 
+
+              
+
             const successResponse : SuccessResponseDTO<typeof group>={
                 success:true ,
                 message:"Group Created Successfully" ,
@@ -303,6 +289,9 @@ export const addToGroupChat = async(req:AuthenticatRequest<modifyGroupDTO> , res
             }) 
         .sort({updatedAt:-1})
 
+
+       
+
         const success :SuccessResponseDTO<typeof data>={
             success:true ,
             message:"Added Member",
@@ -372,6 +361,7 @@ export const removeFromGroupChat = async(req:AuthenticatRequest<modifyGroupDTO> 
             }) 
         .sort({updatedAt:-1})
 
+      
         const success :SuccessResponseDTO<typeof newGroup>={
             success:true ,
             message:"Member Removed Successfully" ,
@@ -404,6 +394,8 @@ export const deleteGroupChat =async(req:AuthenticatRequest<modifyGroupDTO> ,res:
             errResponse.message="No Such Group Exists"
             return res.status(400).json(errResponse)
         }
+
+       
 
         return res.status(200).json({
             success:true ,
@@ -528,6 +520,8 @@ export const leaveGroup = async(req:AuthenticatRequest<modifyGroupDTO> , res:Res
 
 
         await groupExists.save()
+
+       
         const success :SuccessResponseDTO<null>={
             success:true ,
             message:"Exited Successfully" ,

@@ -3,7 +3,7 @@ import { Chat, User , ChatMessages, Message } from "../interfaces/interfaces";
 
 interface AppContextType {
   user: User|null;
-  setUser: React.Dispatch<React.SetStateAction<User>>;
+  setUser: React.Dispatch<React.SetStateAction<User|null>>;
   loader: boolean;
   setLoader: React.Dispatch<React.SetStateAction<boolean>>;
   chats: Chat[];
@@ -37,12 +37,7 @@ interface AppProviderProps {
 }
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User>({
-    _id:"6703c338a06732fd7b58b7c4" ,
-    name:"yash" ,
-    email:"yash" , 
-    avatar:"https://api.multiavatar.com/yash%20male.svg"
-  } as User);
+  const [user, setUser] = useState<User|null>(null);
   const [loader, setLoader] = useState<boolean>(false);
   const [chats, setChats] = useState<Chat[]>([]);
   const [filteredChats, setFilteredChats] = useState<Chat[]|null>(null);
