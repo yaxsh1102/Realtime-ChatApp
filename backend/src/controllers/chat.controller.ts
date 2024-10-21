@@ -13,20 +13,13 @@ let errResponse:ErrorResponseDTO={
     success:false ,
     message:""
 }
-interface SocketEventPayload {
-    name: string;
-    groupChat: boolean;
-    admin: string;
-    members: string[];
-    _id: string; 
-    __v?: number; 
-  }
+
   
 
 export const createChat = async(req: AuthenticatRequest<null>, res: Response)=>{
     try{
 
-        const {id} = req.params;
+        const {id} = req.params; 
         console.log(id)
         console.log(req.user.id)
         if(!id){

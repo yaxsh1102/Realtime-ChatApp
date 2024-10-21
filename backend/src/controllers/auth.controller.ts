@@ -6,7 +6,12 @@ import bcrypt from 'bcrypt'
 import { SuccessResponseDTO } from '../dtos/success.dto';
 import { LoginDTO } from "../dtos/login.dto";
 import jwt from "jsonwebtoken"
-
+import { AuthenticatRequest
+ } from "../middlewares/auth.middleware";
+ let errResponse:ErrorResponseDTO={
+  success:false ,
+  message:""
+}
 
 export const signup  = async (req: Request<{} , {} , SignupDTO>, res: Response):Promise<Response> => {
   try {
@@ -139,4 +144,28 @@ export const login  = async(req:Request<{} ,{} ,LoginDTO > , res:Response): Prom
           return res.status(500).json(errorResponse);
         }
 
+    }
+
+
+    export const getUser = async(req:AuthenticatRequest<null> , res:Response)=>{
+      try{
+
+        const data = await User.findById(req.user.id).select("name email _id avatar")
+
+        const successResponse :SuccessResponseDTO<typeof data>={
+          success:true ,
+          message:"User Details Fetched" ,
+          data:data
+
+        }
+
+        return res.status(200).json(successResponse)
+
+        
+
+      }catch(err){
+        errResponse.message="Internal Server Error"
+        return res.status(500).json(errResponse)
+
+      }
     }

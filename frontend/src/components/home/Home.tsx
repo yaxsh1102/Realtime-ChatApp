@@ -2,19 +2,31 @@ import Chats from '../chats/Chats';
 import ChatPage from '../chats/ChatPage';
 import GroupInfo from '../group/GroupInfo';
 import CreateChat from '../form/CreateChat';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { AppContext } from'../../context/AppContext';
 import Loader from '../miscellaneous/Loader';
 import { useEffect } from 'react';
 import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import socket from '../../socket';
+import { Socket , io } from 'socket.io-client';
 const Home = () => {
 
 
 
   const appContext = useContext(AppContext); 
   const navigate = useNavigate()
+
+  const [socket , setSocket] = useState<Socket|null>(null)
+  useEffect(()=>{
+    const URL = "http://localhost:4000";
+const socket: Socket = io(URL, {
+  transports: ['websocket', 'polling'],
+});
+
+if(socket){
+  setSocket(socket)
+}
+  } , [])
 
   if (!appContext) {
     throw new Error('AppContext must be used within an AppProvider');
@@ -27,7 +39,6 @@ const Home = () => {
 
 
   const { setChats  , setLoader , createChat  , showMenu  , showGroupInfo  , user} = appContext;
-  console.log(user)
 
   if(!localStorage.getItem("token")){
     navigate("/login")
@@ -45,7 +56,6 @@ const Home = () => {
         }
       } )
     const resp = await data.json()
-    console.log(resp) 
     setChats(resp.data)
  
     }
@@ -57,20 +67,20 @@ const Home = () => {
     getChats()
 
   } , [])
-  console.log(user)
 
   useEffect(() => {
     if (user?._id && !initializeRef.current) {
       socket.emit("initializeUser", user._id);
       initializeRef.current = true; 
       
-      console.log('Socket initialized for user:', user._id);
     }
 
     return () => {
       initializeRef.current = false;
     };
   }, [user?._id]);
+
+
 
  
   return (

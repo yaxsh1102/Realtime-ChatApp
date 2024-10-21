@@ -2,6 +2,7 @@ import React, { useContext, useState } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { useNavigate } from 'react-router-dom';
 import socket from '../../socket';
+import { MdAlternateEmail } from 'react-icons/md';
 
 interface FormData {
   email: string;
@@ -49,9 +50,10 @@ const Login: React.FC = () => {
         setUser(resp.data.user)
         console.log(resp)
 
-        navigate("/")
+        navigate("/") 
       }
     } catch (err) {
+      alert(err)
       console.error('Login error:', err);
     }
   }

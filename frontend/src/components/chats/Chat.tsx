@@ -18,6 +18,7 @@ const ChatComponent:React.FC<ChatComponentProps> = ({chat}) => {
    const formattedTime = extractTime(dateStr);
    const name = chat.groupChat ? (chat.name):(chat.members[0]._id===user?._id ? (chat.members[1].name):(chat.members[0].name
    ))
+   console.log(chat.members)
 
 
 
@@ -25,7 +26,7 @@ const ChatComponent:React.FC<ChatComponentProps> = ({chat}) => {
     <div className='w-full' >
         <div className='flex justify-between px-4 items-center h-16 mt-2 w-full hover:bg-[#3a3b3d] 'onClick={()=>{setCurrentChat(chat)}}>
             <div className='flex items-center w-full'>
-                <img src={!chat.groupChat ? (chat.members[1].avatar) :("group.png.png")} height={16} width={16} className='lg:h-12 lg:w-12 md:h-8 md:w-8 h-12 w-12' alt="" />
+                <img src={!chat.groupChat ? ("https://api.multiavatar.com/mann%20male.svg") :("group.png.png")}   className='h-12 w-12' alt="" />
             <div className='flex flex-col px-4 w-full'>
                 <div className='flex justify-between w-full items-center'>
                 <p>{name}</p>

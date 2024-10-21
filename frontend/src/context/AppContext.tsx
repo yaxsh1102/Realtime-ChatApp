@@ -26,6 +26,8 @@ interface AppContextType {
   setShowGroupInfo:React.Dispatch<React.SetStateAction<boolean>>  ,
   addMembers:boolean ,
   setShowAddMembers:React.Dispatch<React.SetStateAction<boolean>>  ,
+  onlineMember:string[] ,
+  setOnlineMember:React.Dispatch<React.SetStateAction<string[]>>
   
 
 }
@@ -49,6 +51,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const[createChat , setCreateChat] = useState<boolean>(false)
   const[showGroupInfo , setShowGroupInfo] = useState<boolean>(false)
   const[addMembers , setShowAddMembers] = useState<boolean>(false)
+  const[onlineMember , setOnlineMember] = useState<string[]>([])
+
 
   const contextValue: AppContextType = {
     user,
@@ -74,7 +78,10 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     showGroupInfo ,
     setShowGroupInfo ,
     addMembers , 
-    setShowAddMembers
+    setShowAddMembers ,
+    onlineMember ,
+     setOnlineMember
+     
 
   };
 

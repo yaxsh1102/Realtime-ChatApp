@@ -1,7 +1,9 @@
-import express, { Request, Response } from 'express';
+import express, { Request, RequestHandler, Response } from 'express';
 import { signup, login } from "../controllers/auth.controller";
 import { SignupDTO } from '../dtos/signup.dto';
 import { LoginDTO } from '../dtos/login.dto'; 
+import { AuthenticatedUser, AuthenticatRequest } from '../middlewares/auth.middleware';
+import { getUser } from '../controllers/auth.controller';
 
 const router = express.Router();
 
@@ -13,7 +15,13 @@ const loginHandler = (req: Request<{}, {}, LoginDTO>, res: Response) => {
   login(req, res);
 };
 
+const fetchUserhandler = (req: Request<{} , {} , null>, res: Response) => {
+  getUser(req as AuthenticatRequest<null>, res);
+};
+
 router.post("/signup", signupHandler);
 router.post("/login", loginHandler);
+router.get("/get-user",  AuthenticatedUser as RequestHandler , fetchUserhandler);
+
 
 export default router;

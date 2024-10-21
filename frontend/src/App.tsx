@@ -5,13 +5,15 @@ import Login from './components/auth/Login';
 import { Routes ,  Route} from 'react-router-dom';
 import Home from './components/home/Home';
 import { useEffect } from 'react';
-import socket from './socket';
 import Signup from './components/auth/Signup';
-import { SocketProvider } from './context/SocketContext';
 import { useAppContext } from './context/AppContext';
+import useFetchUser from './components/hooks/useGetUser';
  
 
 function App() {
+  useFetchUser()
+
+
 
   
  

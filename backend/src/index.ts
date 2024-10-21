@@ -20,7 +20,7 @@ const server = http.createServer(app);
  
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "*",  
+    origin:  "*",  
     methods: ["GET", "POST"],
     credentials: true
   },
@@ -28,12 +28,12 @@ const io = new Server(server, {
   transports: ['websocket', 'polling']  
 });
 
-// Middleware
 app.use(express.json());
 app.use(cors({
-  origin: process.env.CLIENT_URL || "*",
-  credentials: true
+  origin:  "*",
 }));
+
+
 
 const users: { [key: string]: Socket } = {};
 
@@ -43,6 +43,7 @@ io.on("connection", (socket: Socket) => {
   socket.on("initializeUser", (userId: string) => {
     console.log(`User initialized: ${userId}`);
 
+
     console.log(socket.id)
 
     if (users[userId]) {
@@ -51,8 +52,9 @@ io.on("connection", (socket: Socket) => {
     }
 
     users[userId] = socket;
+    console.log(users)
+
     socket.join(userId);  
-    console.log(`Current users: ${JSON.stringify(Object.keys(users))}`); // Log current users
   });
 
   socket.on("joinChat", (chatId: string) => {
@@ -67,7 +69,6 @@ io.on("connection", (socket: Socket) => {
       if (users[userId] === socket) {
         delete users[userId];
         console.log(`Removed user from tracking: ${userId}`);
-        console.log(`Current users after disconnect: ${JSON.stringify(Object.keys(users))}`); // Log current users
         break;
       }
     }
@@ -75,7 +76,7 @@ io.on("connection", (socket: Socket) => {
 
   socket.on("newMessage", (data) => {
     console.log("New message received:", data);
-    console.log(`Current users before sending message: ${JSON.stringify(Object.keys(users))}`); 
+    console.log(users)
 
     data.chat.members.forEach((member: User) => {
       if (member._id.toString() !== data.sender._id.toString()) {
@@ -88,6 +89,30 @@ io.on("connection", (socket: Socket) => {
       }
     });
   });
+
+  socket.on("startTyping" , (data)=>{
+    console.log(data)
+
+    data.members.forEach((member:User)=>{
+      if(users[member._id] ){
+        console.log("message")
+        socket.to(member._id).emit("showTyping")
+      }
+
+    })
+
+  })
+
+  socket.on("stopTyping" , (data)=>{
+
+    data.members.forEach((member:User)=>{
+      if(users[member?._id]){
+        socket.to(member._id).emit("stopShowingTyping")
+      }
+
+    }) 
+
+  })
 });
 
 app.use('/api/v1/auth', authRoutes);
