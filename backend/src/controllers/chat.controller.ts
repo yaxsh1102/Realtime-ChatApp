@@ -8,6 +8,8 @@ import { modifyGroupDTO } from '../dtos/modifyGroup.dto';
 import mongoose  from 'mongoose';
 import { SuccessResponseDTO } from './../dtos/success.dto';
 import { searchUserDTO } from '../dtos/searchuser.dto';
+import { deleteGroupIO, updateGroupIO } from '../socket';
+import { removeFromGroupIO } from '../socket';
 
 let errResponse:ErrorResponseDTO={
     success:false ,
@@ -282,6 +284,11 @@ export const addToGroupChat = async(req:AuthenticatRequest<modifyGroupDTO> , res
             }) 
         .sort({updatedAt:-1})
 
+        data?.members.forEach((member)=>{
+           updateGroupIO(member._id.toString() , "updateGroup" , data) 
+        })
+
+
 
        
 
@@ -354,6 +361,15 @@ export const removeFromGroupChat = async(req:AuthenticatRequest<modifyGroupDTO> 
             }) 
         .sort({updatedAt:-1})
 
+        removeFromGroupIO(member , "removeFromGroupChat" , group)
+
+
+        newGroup?.members.forEach((groupMember)=>{
+                updateGroupIO(groupMember._id.toString() , "updateGroup" , newGroup)
+            }
+
+        )
+
       
         const success :SuccessResponseDTO<typeof newGroup>={
             success:true ,
@@ -387,6 +403,11 @@ export const deleteGroupChat =async(req:AuthenticatRequest<modifyGroupDTO> ,res:
             errResponse.message="No Such Group Exists"
             return res.status(400).json(errResponse)
         }
+
+        deletedChat.members.forEach((member)=>{
+            deleteGroupIO(member.toString() , "deleteGroup" , group)
+
+        })
 
        
 
@@ -480,13 +501,15 @@ export const leaveGroup = async(req:AuthenticatRequest<modifyGroupDTO> , res:Res
 
         const { group} = req.body 
         const id = req.user.id ;
+        console.log("Hiii")
         if(!group){
             errResponse.message="Missing Parameters"
             return res.status(400).json(errResponse)
         }
 
-        const groupExists = await Chat.findOne({_id:group , groupChat:true})
-                                                          .populate("admin")
+        let groupExists = await Chat.findOne({_id:group , groupChat:true}).populate("admin")
+        
+
         if( !groupExists){
             errResponse.message = ("No Such Group Exists")
             return res.status(400).json(errResponse)
@@ -496,6 +519,7 @@ export const leaveGroup = async(req:AuthenticatRequest<modifyGroupDTO> , res:Res
 
 
         const objectID = new mongoose.Types.ObjectId(id)
+    
 
         if(!groupExists.members.includes(objectID)){
             errResponse.message="No Such User Exists In Group"
@@ -513,6 +537,34 @@ export const leaveGroup = async(req:AuthenticatRequest<modifyGroupDTO> , res:Res
 
 
         await groupExists.save()
+        console.log("pink")
+
+        const newGroup = await Chat.findOne({_id:group , groupChat:true})
+                                                    .populate({
+                                                        path:"members" ,
+                                                        select:"name email avatar _id"
+                                                    })
+                                                    .populate(
+                                                        {
+                                                            path:"lastMessage" ,
+                                                            populate:{
+                                                                path:"sender" ,
+                                                                select:" avatar email name"
+                                                            }
+
+
+                                                    })
+                                                    .populate({path:"admin" ,  
+                                                        select:"name email avatar"
+                                                        }) 
+
+                newGroup?.members.forEach((member)=>{
+                    updateGroupIO(member._id.toString() , "updateGroup" , newGroup)
+                })
+
+                removeFromGroupIO(req.user.id , "leaveGroup" , group)
+
+          
 
        
         const success :SuccessResponseDTO<null>={
@@ -528,6 +580,8 @@ export const leaveGroup = async(req:AuthenticatRequest<modifyGroupDTO> , res:Res
 
 
     }catch(err){
+        errResponse.message="Error Occured"
+        return res.status(500).json(errResponse)
 
     }
 }

@@ -89,8 +89,10 @@ export const sendMessage = async(req:AuthenticatRequest<contentDTO> , res:Respon
 
         })
 
+        const msgId = new mongoose.Types.ObjectId(message._id)
 
-        chat.lastMessage=message._id as mongoose.Types.ObjectId ;
+
+        chat.lastMessage=msgId ;
         await chat.save()
 
 

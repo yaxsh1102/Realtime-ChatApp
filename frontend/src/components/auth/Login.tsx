@@ -53,8 +53,8 @@ const Login: React.FC = () => {
         navigate("/") 
       }
     } catch (err) {
-      alert(err)
-      console.error('Login error:', err);
+      console.log(err)
+              console.error('Login error:', err);
     }
   }
 

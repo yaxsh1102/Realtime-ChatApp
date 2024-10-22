@@ -12,14 +12,15 @@ interface MessageProps {
 
 const Message = ({ isRight = true, content, time, name, avatar }: MessageProps) => {
   const timeStr = extractTime(time);
-  const { user, currentChat } = useAppContext();
-
+  const { user, currentChat } = useAppContext() ;
+  console.log(name)
+ 
   return (
     <div className={`w-full flex ${isRight ? 'justify-end' : 'justify-start'}`}>
       <div className={`flex items-start space-x-2 lg:max-w-72 max-w-64 p-1.5 ${isRight ? 'flex-row-reverse space-x-reverse' : ''}`}>
         {!isRight && (
           <img
-            src="https://api.multiavatar.com/mann%20male.svg"
+            src="https://api.multiavatar.com/mann%20male.svg" 
             alt="avatar"
             className="h-6 w-6 rounded-full flex-shrink-0 mt-2"
           />

@@ -6,6 +6,8 @@ import Loader from '../miscellaneous/Loader';
 import { CiCircleInfo } from "react-icons/ci";
 import socket from '../../socket';
 import { Message as MessageType } from '../../interfaces/interfaces';
+import useSocketMessages from '../hooks/useSocketMessages';
+import useSocketChats from '../hooks/useSocketChats';
 
 const ChatPage: React.FC = () => {
 
@@ -32,6 +34,7 @@ const ChatPage: React.FC = () => {
     currentChat,
     setLoader,
     setShowGroupInfo ,
+    setCurrentChat ,
     
     user
   } = useAppContext();
@@ -52,14 +55,14 @@ const scrollToBottom = useCallback(() => {
   if (messagesContainerRef.current) {
     messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
   }
-}, []);
+}, []); 
 
 const fetchMessages = useCallback(async () => {
   if (!currentChat) return;
 
   setLoader(true);
 
-  console.log('fetch messges called')
+  console.log(currentChat)
   try {
     const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}message/get-messages/${currentChat._id}`, {
       method: "GET",
@@ -83,6 +86,9 @@ const fetchMessages = useCallback(async () => {
   }
 }, [currentChat]);
 
+useSocketMessages(setCurrentMessages);
+useSocketChats(currentChat)
+
 useEffect(() => {
   const existingChat = chatMessages.find(chat => chat.chatId === currentChat?._id);
 
@@ -103,12 +109,7 @@ useEffect(() => {
     if (!currentChat || message.length===0) {
       return;
     }
-    const data = {
-      chat:currentChat , 
-      sender:user , 
-      content:message
-    }
-    socket.emit("newMessage" ,data)
+   
 
     try {
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}message/send-message/${currentChat._id}`, {
@@ -122,36 +123,20 @@ useEffect(() => {
 
       const resp = await response.json();
       setCurrentMessages(resp.data); 
+
       setTimeout(scrollToBottom , 100)
+      handleStopTyping()
+      setMessage("") 
     } catch (error) {
       console.error('Error sending message:', error);
     }
   };
 
-  console.log(user)
     
-  
-  useEffect(() => {
-    const handleMessageReceive = (data: MessageType) => { 
-      console.log('Message received:', data);
-      
-      setCurrentMessages(prev => {
-        if (prev.length > 0 && prev[prev.length - 1].createdAt === data.createdAt) {
-          return prev;
-        }
-        return [...prev, data];
-      });
-        };
-  
-    socket.on("receiveMessage", handleMessageReceive);
-  
-    return () => {
-      socket.off("receiveMessage" , ()=> console.log(12));
-    };
-  }, [] )
+ 
 
   const handleStartTyping = ()=>{
-    if(!typing){
+    if(!typing){ 
       setTyping(true)
       const data ={
        chatId: currentChat?._id ,
@@ -175,12 +160,10 @@ useEffect(() => {
 
   useEffect(() => {
     const handleShowTyping = (typingUserId: string) => {
-      console.log("typinggg")
       setShowTyping(true)
     };
 
     const handleStopTypingNotification = () => {
-      console.log("stopped typing")
       setShowTyping(false)
     };
 
@@ -265,6 +248,7 @@ useEffect(() => {
       </div>
 
       <div className='h-24 min-h-[6rem] w-full p-4 flex items-center bg-[#262729] border-t-[0.1px] border-slate-700'>
+
         <input
           className='flex-grow h-12 px-4 rounded-l-full border border-gray-300 focus:outline-none focus:border-blue-500 text-white bg-[#2e3033]'
           placeholder='Send a message..'

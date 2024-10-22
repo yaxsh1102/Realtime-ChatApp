@@ -10,6 +10,7 @@ export interface Message {
     content: string;
     sender: User;
     createdAt:string
+    chat:string ,
 }
 
 export interface Chat {

@@ -62,9 +62,9 @@ export const AuthenticatedUser = async (
         const auth = jwt.verify(token, jwt_secret) as { id: string };
         const user = await UserModel.findById(auth.id).select("_id email");
         if (!user) {
-            const errResponse: ErrorResponseDTO = {
+            const errResponse: ErrorResponseDTO = { 
                 success: false,
-                message: "No such user exists",
+                 message: "No such user exists",
             };
             return res.status(401).json(errResponse);
         }

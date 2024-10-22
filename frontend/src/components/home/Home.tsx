@@ -8,7 +8,8 @@ import Loader from '../miscellaneous/Loader';
 import { useEffect } from 'react';
 import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Socket , io } from 'socket.io-client';
+import socket from '../../socket';
+import useSocketChats from '../hooks/useSocketChats';
 const Home = () => {
 
 
@@ -16,17 +17,8 @@ const Home = () => {
   const appContext = useContext(AppContext); 
   const navigate = useNavigate()
 
-  const [socket , setSocket] = useState<Socket|null>(null)
-  useEffect(()=>{
-    const URL = "http://localhost:4000";
-const socket: Socket = io(URL, {
-  transports: ['websocket', 'polling'],
-});
+ 
 
-if(socket){
-  setSocket(socket)
-}
-  } , [])
 
   if (!appContext) {
     throw new Error('AppContext must be used within an AppProvider');
@@ -69,13 +61,24 @@ if(socket){
   } , [])
 
   useEffect(() => {
-    if (user?._id && !initializeRef.current) {
-      socket.emit("initializeUser", user._id);
-      initializeRef.current = true; 
-      
-    }
-
+    const initializeSocket = () => {
+      if (user?._id && !initializeRef.current) {
+        console.log("Initializing socket for user:", user._id);
+        
+        socket.disconnect();
+        
+        socket.connect();
+        socket.emit("initializeUser", user._id);
+        
+        initializeRef.current = true;
+      }
+    };
+  
+    initializeSocket();
+  
     return () => {
+      console.log("Cleaning up socket connection");
+      socket.disconnect();
       initializeRef.current = false;
     };
   }, [user?._id]);

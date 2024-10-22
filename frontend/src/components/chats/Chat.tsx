@@ -2,6 +2,7 @@ import React from 'react'
 import { Chat } from '../../interfaces/interfaces'
 import {  useAppContext } from '../../context/AppContext';
 import { extractTime } from '../miscellaneous/timeExtract';
+import { useState } from 'react';
 
 
 
@@ -11,15 +12,15 @@ interface ChatComponentProps {
 
 
 
+
 const ChatComponent:React.FC<ChatComponentProps> = ({chat}) => {
+
   const {user} = useAppContext()
    const {setCurrentChat} = useAppContext()
    const dateStr = chat.lastMessage?.createdAt +""
    const formattedTime = extractTime(dateStr);
    const name = chat.groupChat ? (chat.name):(chat.members[0]._id===user?._id ? (chat.members[1].name):(chat.members[0].name
-   ))
-   console.log(chat.members)
-
+   ))  
 
 
   return (
@@ -35,7 +36,9 @@ const ChatComponent:React.FC<ChatComponentProps> = ({chat}) => {
 
                 <p className='text-xs '>{chat.lastMessage?.content || ""}</p>
             </div>
-            </div> 
+            </div>
+
+
 
         </div> 
     </div> 

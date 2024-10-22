@@ -12,7 +12,7 @@ const Chats:FC = () => {
   if (!appContext) {
     throw new Error('AppContext must be used within an AppProvider');
   }
-  const { chats , setCreateChat , createChat , setShowMenu , showMenu , filteredChats } = appContext;
+  const { chats , setCreateChat  , filteredChats } = appContext;
 
 
 

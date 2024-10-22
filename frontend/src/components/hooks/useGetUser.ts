@@ -1,4 +1,3 @@
-// src/hooks/useFetchUser.ts
 import { useEffect } from 'react';
 import { useAppContext } from '../../context/AppContext';
 

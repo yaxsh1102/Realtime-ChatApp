@@ -79,13 +79,14 @@ export const login  = async(req:Request<{} ,{} ,LoginDTO > , res:Response): Prom
                 success: false,
                 message: 'All fields (name, username, email, password) are required.',
               };
-              return res.status(400).json(errorResponse);
+              return res.status(400).json(errorResponse); 
             }
 
         
 
   
        const  user = await User.findOne({email:email})
+       console.log(user)
    
 
     if(!user){
@@ -96,12 +97,14 @@ export const login  = async(req:Request<{} ,{} ,LoginDTO > , res:Response): Prom
           return res.status(400).json(errorResponse);
         }
     if(!await bcrypt.compare(password , user.password)){
+      console.log("hii")
         const errorResponse: ErrorResponseDTO = {
             success: false,
             message: 'Incorrect Password',
           };
           return res.status(400).json(errorResponse);
         }
+        console.log("pink")
 
 
         const payload = {
