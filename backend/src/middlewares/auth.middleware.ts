@@ -10,14 +10,18 @@ interface User {
     email: string;
 }
 
-export interface AuthenticatRequest<T=null> extends Request {
-    user: User;  
-    body: T;     
+export interface AuthenticatRequest<T = null> extends Request {
+    user: User;
+    body: T;
+    headers: {
+        [key: string]: string | undefined;
+        authorization?: string;
+    };
 }
 
-
-
-
+interface JWTPayload {
+    id: string;
+}
 
 require("dotenv").config();
 const jwt_secret = process.env.JWT_SECRET;
@@ -32,25 +36,18 @@ export const AuthenticatedUser = async (
     next: NextFunction
 ) => {
     try {
-        let token = req.headers['authorization'];
-        if (!token) {
-            const errResponse: ErrorResponseDTO = {
-                success: false,
-                message: "Authorization Token Required",
-            };
-            return res.status(401).json(errResponse);
-        }
-
-        if (typeof token === 'string') {
-            token = token.split(' ')[1]; 
-        } else {
-            const errorResponse: ErrorResponseDTO = {
-                success: false,
-                message: "Invalid Authorization Token",
-            };
-            return res.status(400).json(errorResponse);
-        } 
+        const authHeader = req.headers.authorization;
         
+        if (!authHeader) {
+            const errResponse: ErrorResponseDTO = {
+                success: false,
+                message: "Authorization Token Required",
+            };
+            return res.status(401).json(errResponse);
+        }
+
+        const token = authHeader.split(' ')[1];
+
         if (!token) {
             const errResponse: ErrorResponseDTO = {
                 success: false,
@@ -59,29 +56,31 @@ export const AuthenticatedUser = async (
             return res.status(401).json(errResponse);
         }
 
-        const auth = jwt.verify(token, jwt_secret) as { id: string };
+        const auth = jwt.verify(token, jwt_secret) as JWTPayload;
+        
         const user = await UserModel.findById(auth.id).select("_id email");
+        
         if (!user) {
-            const errResponse: ErrorResponseDTO = { 
+            const errResponse: ErrorResponseDTO = {
                 success: false,
-                 message: "No such user exists",
+                message: "No such user exists",
             };
             return res.status(401).json(errResponse);
         }
 
         req.user = {
-            id: (user._id as mongoose.Types.ObjectId).toString(),
+            id: (user._id as mongoose.Types.ObjectId).toString(), 
             email: user.email,
         };
+        
         next();
     } catch (err) {
-        console.log(err)
+        console.error('Auth middleware error:', err);
         
         const errResponse: ErrorResponseDTO = {
             success: false,
-            message: "Token Expired" ,
+            message: "Token Expired",
         };
         return res.status(500).json(errResponse);
     }
 };
-
