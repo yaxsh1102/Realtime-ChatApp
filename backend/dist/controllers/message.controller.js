@@ -12,10 +12,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendMessage = exports.getMessages = void 0;
+exports.markChatAsRead = exports.sendMessage = exports.getMessages = void 0;
 const chat_schema_1 = require("../models/chat.schema");
 const mongoose_1 = __importDefault(require("mongoose"));
 const message_schema_1 = require("../models/message.schema");
+const socket_1 = require("../socket");
 let errResponse = {
     success: false,
     message: ""
@@ -62,6 +63,7 @@ const sendMessage = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             errResponse.message = "Missing parameters";
             return res.status(400).json(errResponse);
         }
+        console.log("pejfjsbvbhfvbshfvefvgevfg");
         const chat = yield chat_schema_1.Chat.findOne({ _id: chatId });
         if (!chat) {
             errResponse.message = "No Chats Found";
@@ -72,18 +74,27 @@ const sendMessage = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             content: content,
             chat: new mongoose_1.default.Types.ObjectId(chatId),
         });
-        chat.lastMessage = message._id;
-        yield chat.save();
-        const newMessage = yield message_schema_1.Message.find({ chat: chatId })
+        const msgId = new mongoose_1.default.Types.ObjectId(message._id);
+        chat.lastMessage = msgId;
+        const newMessage = yield message_schema_1.Message.findOne({ _id: msgId })
             .populate({
             path: "sender",
             select: "name username avatar"
-        })
-            .populate("chat");
+        });
         if (!newMessage) {
             errResponse.message = "Message creation failed";
             return res.status(500).json(errResponse);
         }
+        chat.members.forEach((member) => {
+            if (member.toString() !== req.user.id) {
+                chat.unreadBy.push(member);
+                (0, socket_1.emitMessage)(member.toString(), "receiveMessage", newMessage);
+            }
+        });
+        console.log("hhhhhhhhhhh");
+        chat.markModified("unreadBy");
+        yield chat.save();
+        console.log(chat);
         const successResponse = {
             success: true,
             message: "Message sent successfully",
@@ -97,3 +108,21 @@ const sendMessage = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.sendMessage = sendMessage;
+const markChatAsRead = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { chatId } = req.params;
+        yield chat_schema_1.Chat.updateOne({ _id: chatId }, { $pull: { unreadBy: req.user.id } });
+        return res.status(200).json({
+            success: true,
+            message: "Chat marked as read"
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: "Error marking chat as read"
+        });
+    }
+});
+exports.markChatAsRead = markChatAsRead;

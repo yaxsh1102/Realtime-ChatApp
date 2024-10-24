@@ -3,24 +3,26 @@ import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
 
 interface FormData {
-  name:string
+  name: string;
   email: string;
   password: string;
+  gender: string;
 }
 
 const Signup: React.FC = () => {
-  const navigate = useNavigate()
-  const isValidEmail =/ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+  const navigate = useNavigate();
+  const isValidEmail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
   const [formData, setFormData] = useState<FormData>({
-    name:"" ,
+    name: '',
     email: '',
-    password: ''
+    password: '',
+    gender: ''
   });
 
-  const {setUser} = useAppContext()
+  const { setUser , showToast } = useAppContext();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -29,55 +31,53 @@ const Signup: React.FC = () => {
   };
 
   const signupHandler = () => {
-    const { email, password , name } = formData;
-    if (!email || !password || !name) {
+    const { email, password, name, gender } = formData;
+    if (!email || !password || !name || !gender) {
+      showToast("All Fields are Required")
+      
       return;
     }
-    // if(isValidEmail.test(email)){
-
-    // }
-    void signup(name , email, password);
+    if (isValidEmail.test(email)) {
+      void signup(name, email, password, gender);
+    }
   };
 
-  async function signup( name:string , email: string, password: string ,) {
-    console.log(process.env.REACT_APP_BACKEND_URL)
+  async function signup(name: string, email: string, password: string, gender: string) {
     try {
-      const response = await fetch(process.env.REACT_APP_BACKEND_URL as string +"auth/signup", {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL as string}auth/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name , email, password }),
+        body: JSON.stringify({ name, email, password, gender }),
       });
 
       const resp = await response.json();
-      console.log(resp)
-
       if (resp.success) {
-        localStorage.setItem("token" , resp.data.token)
-        setUser(resp.data.user)
-
-        navigate("/")
+        localStorage.setItem('token', resp.data.token);
+        setUser(resp.data.user);
+        navigate('/');
+      }else{
+        showToast(resp.message)
       }
     } catch (err) {
-      console.error('Login error:', err);
+      console.log(err)
+      showToast("Error Occured")
     }
   }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-tr from-[#000000] to-[#434343]">
-      <div className="p-8 space-y-8  rounded-md shadow-xl w-96  bg-gray-800">
-        <h2 className="text-4xl font-bold text-center text-white">Login</h2>
+      <div className="p-8 space-y-8 rounded-md shadow-xl w-96 bg-gray-800">
+        <h2 className="text-4xl font-bold text-center text-white">Signup</h2>
 
         <div className="space-y-4">
-        <div>
-            <label className="block text-sm font-medium text-gray-300">
-              Name
-            </label>
+          <div>
+            <label className="block text-sm font-medium text-gray-300">Name</label>
             <input
               id="name"
               name="name"
-              type="name"
+              type="text"
               required
               placeholder="Enter your name"
               className="w-full px-3 py-2 mt-1 text-white bg-gray-700 border border-gray-600 rounded-sm border-b-[2px] border-b-indigo-500 outline-none"
@@ -85,25 +85,23 @@ const Signup: React.FC = () => {
               onChange={handleChange}
             />
           </div>
+          
           <div>
-            <label className="block text-sm font-medium text-gray-300">
-              Email
-            </label>
+            <label className="block text-sm font-medium text-gray-300">Email</label>
             <input
               id="email"
               name="email"
               type="email"
               required
               placeholder="Enter your email"
-              className="w-full px-3 py-2 mt-1 text-white bg-gray-700 border border-gray-600 rounded-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 py-2 mt-1 text-white bg-gray-700 border border-gray-600 rounded-sm border-b-[2px] border-b-indigo-500 outline-none"
               value={formData.email}
               onChange={handleChange}
             />
           </div>
+
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-300">
-              Password
-            </label>
+            <label className="block text-sm font-medium text-gray-300">Password</label>
             <input
               id="password"
               name="password"
@@ -114,6 +112,22 @@ const Signup: React.FC = () => {
               value={formData.password}
               onChange={handleChange}
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300">Gender</label>
+            <select
+              id="gender"
+              name="gender"
+              required
+              className="w-full px-3 py-2 mt-1 text-white bg-gray-700 border border-gray-600 rounded-sm border-b-[2px] border-b-indigo-500 outline-none"
+              value={formData.gender}
+              onChange={handleChange}
+            >
+              <option value="" disabled>Select your gender for gravatar</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
           </div>
         </div>
 
@@ -132,12 +146,14 @@ const Signup: React.FC = () => {
             <span className="px-2 text-gray-400 bg-gray-800">OR</span>
           </div>
         </div>
-        
 
         <div className="mt-6 text-center text-gray-400">
           <p>
             Already have an account?{' '}
-            <span className="font-medium text-indigo-400 hover:text-indigo-300 cursor-pointer" onClick={()=>{navigate("/login")}}>
+            <span
+              className="font-medium text-indigo-400 hover:text-indigo-300 cursor-pointer"
+              onClick={() => navigate('/login')}
+            >
               Log In
             </span>
           </p>

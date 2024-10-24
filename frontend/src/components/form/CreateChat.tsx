@@ -8,7 +8,7 @@ import { User } from '../../interfaces/interfaces';
 
 
 const CreateChat: React.FC = () => {
-  const { setCreateChat , user , setChats  , chats , addMembers , currentChat , setShowAddMembers , setCurrentChat } = useAppContext();
+  const { setCreateChat , user , setChats  , chats , addMembers , currentChat , setShowAddMembers , setCurrentChat , showToast } = useAppContext();
   
 
   const [isGroupChat, setIsGroupChat] = useState<boolean>(addMembers ? true :false);
@@ -62,15 +62,17 @@ const CreateChat: React.FC = () => {
 
   async function handleSearch(name: string) {
     if (isGroupChat) {
-      const filteredResults = chats
-  .flatMap(chat => chat.members)  
-  .filter(member => member.name.toLowerCase().includes(name.toLowerCase())) 
-  .filter(member => !selectedMembers.some(selected => selected._id === member._id));
-
-setSearchResults(filteredResults); 
-
+      const filteredResults = Array.from(
+        new Set(
+          chats.flatMap(chat => chat.members).map(member => member._id)
+        )
+      )
+        .map(id => chats.flatMap(chat => chat.members).find(member => member._id === id)) 
+        .filter(member => member && member.name.toLowerCase().includes(name.toLowerCase())) 
+        .filter(member => !selectedMembers.some(selected => selected._id === member?._id)); 
+  
+      setSearchResults(filteredResults as User[]); // Update the search results
       setLoading(false);
-      console.log("hiee")
     } else {
       try {
         const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}chat/get-search-results`, {
@@ -97,11 +99,11 @@ setSearchResults(filteredResults);
   async function createOnetoOneChat (){
 
     if(selectedMembers.length!==2){
+      showToast("Select atleast one person")
       return 
 
     }
 
-    console.log("hii")
     try{
     const data = await fetch(`${process.env.REACT_APP_BACKEND_URL}chat/create-chat/${selectedMembers[1]._id}` , {
       method:"GET" ,
@@ -112,7 +114,7 @@ setSearchResults(filteredResults);
     })
     const resp = await data.json()
     if(resp.success){
-      setChats([...chats , resp.data])
+      setChats([resp.data , ...chats])
     }
     setIsDropdownVisible(false)
     setSearchTerm("")
@@ -127,11 +129,15 @@ setSearchResults(filteredResults);
 }
 async function createGroupChat (){
 
-  if(selectedMembers.length<2 || groupName.trim().length===0){
-    console.log(selectedMembers)
-    console.log(groupName)
-    console.log("eww")
+  if(selectedMembers.length<2 ){
+    showToast("Atleast two people required")
+    
     return 
+
+  }
+
+  if( groupName.trim().length===0){
+    showToast("Group Name Required")
 
   }
 
@@ -148,7 +154,10 @@ async function createGroupChat (){
   const resp = await data.json()
   console.log(resp)
   if(resp.success){
-    setChats([...chats , resp.data])
+    setChats([ resp.data ,...chats ])
+  } else {
+    showToast("Error Occured")
+
   }
   setIsDropdownVisible(false)
   setSearchTerm("")
@@ -156,6 +165,7 @@ async function createGroupChat (){
 
   
 }catch(err){
+  showToast("Error Occured")
 console.log(err)
 }
 }
@@ -163,9 +173,7 @@ console.log(err)
 async function addToGroup (){
 
   if(selectedMembers.length===0 ){
-    console.log(selectedMembers)
-    console.log(groupName)
-    console.log("eww")
+   
     return 
 
   }
@@ -228,7 +236,7 @@ console.log(err)
         />
 
         {isDropdownVisible && (
-          <div className="absolute z-10 w-full mt-12 bg-white rounded-md shadow-lg max-h-48 overflow-y-auto">
+          <div className="absolute z-10 w-full mt-12 bg-[#393a3c] rounded-md shadow-lg max-h-48 overflow-y-auto">
             {loading ? (
               <div className="px-4 py-2 text-gray-500">Loading...</div> 
             ) : searchResults.length > 0 ? (
@@ -236,7 +244,7 @@ console.log(err)
                 <div
                   key={user._id}
                   onClick={() => handleUserSelect(user)}
-                  className="px-4 py-2 cursor-pointer hover:bg-gray-100"
+                  className="px-4 py-2 cursor-pointer "
                 >
                   <GroupParticipants member={user} isSearchResult={true}></GroupParticipants> 
                 </div>

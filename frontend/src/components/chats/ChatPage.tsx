@@ -7,6 +7,7 @@ import socket from '../../socket';
 import useSocketMessages from '../hooks/useSocketMessages';
 import useSocketChats from '../hooks/useSocketChats';
 import { FaArrowLeft } from "react-icons/fa";
+import Loader from '../miscellaneous/Loader';
 
 const ChatPage: React.FC = () => {
   const [message, setMessage] = useState<string>("");
@@ -14,6 +15,7 @@ const ChatPage: React.FC = () => {
   const [typing, setTyping] = useState<boolean>(false);
   const [showTyping, setShowTyping] = useState<boolean>(false);
   const [typerName, setTyperName] = useState<string>("");
+  const[loading , setLoading]= useState<boolean>(false)
   
   const {
     currentChat,
@@ -38,7 +40,7 @@ const ChatPage: React.FC = () => {
   const fetchMessages = useCallback(async () => {
     if (!currentChat) return;
 
-    setLoader(true);
+    setLoading(true)
     try {
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}message/get-messages/${currentChat._id}`, {
         method: "GET",
@@ -58,7 +60,7 @@ const ChatPage: React.FC = () => {
     } catch (error) {
       console.error('Error fetching messages:', error);
     } finally {
-      setLoader(false);
+      setLoading(false);
     }
   }, [currentChat, setChatMessages, setCurrentMessages, setLoader]);
 
@@ -204,20 +206,26 @@ const ChatPage: React.FC = () => {
       ? currentChat.members[1].name 
       : currentChat.members[0].name);
 
+      const avatar = currentChat.groupChat 
+      ? currentChat.name
+      : (currentChat.members[0]._id === user?._id 
+        ? currentChat.members[1].avatar 
+        : currentChat.members[0].avatar);
+
   return (
     <div className='w-full h-screen flex flex-col bg-gradient-to-tr from-[#1c1e22] to-[#434445]'>
-      <div className='h-16 min-h-[4rem] bg-[#262729] flex items-center text-2xl border-b-[0.1px] border-slate-700 justify-between px-4'>
+   {loading ? <Loader text="loading messages"></Loader> :  (<><div className='h-16 min-h-[4rem] bg-[#262729] flex items-center text-2xl border-b-[0.1px] border-slate-700 justify-between px-4'>
         <div className='flex gap-x-4 items-center'>
           <p className='md:hidden flex hover:cursor-pointer' onClick={()=>{setCurrentChat(null)}}><FaArrowLeft fill='white'/></p>
           <img
-            src={"https://api.multiavatar.com/mann%20male.svg"}
+            src={currentChat.groupChat ? "group.png.png" : avatar }
             className='h-10 w-10 rounded-full'
             alt={`${currentChat?.name}'s Avatar`}
           />
           <div>
             <p className={`text-white transition-all duration-300 ${showTyping ? 'text-sm' : ''}`}>{name}</p>
             <p className={`text-white transition-all duration-300 ${showTyping ? 'flex text-sm' : 'hidden'}`}>
-              {currentChat.groupChat ? `${typerName} is typing..` : "typing.."}
+              {currentChat.groupChat ? `${typerName.split(" ")[0]} is typing..` : "typing.."}
             </p>
           </div>
         </div>
@@ -254,7 +262,7 @@ const ChatPage: React.FC = () => {
         >
           <IoMdSend />
         </button>
-      </div>
+      </div></>)}
     </div>
   );
 };

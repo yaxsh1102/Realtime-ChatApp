@@ -51,28 +51,31 @@ const extractDate = (someDate: Date): string => {
 const formattedTime: string = isToday(messageDate) ? extractTime(messageDate) : extractDate(messageDate);
    const name = chat.groupChat ? (chat.name):(chat.members[0]._id===user?._id ? (chat.members[1].name):(chat.members[0].name
    )) 
+   let avatar = chat.groupChat ? (chat.name):(chat.members[0]._id===user?._id ? (chat.members[1].avatar):(chat.members[0].avatar
+   )) 
    
   const isUnread = chat.unreadBy.includes(user?._id)
   console.log(chat)
+ 
 
 
   return (
     <div className="w-full">
     <div
-      className="flex justify-between px-4 items-center h-16 mt-2 w-full hover:bg-[#3a3b3d]"
+      className="flex justify-between px-4 items-center h-16 mt-2 w-full hover:bg-[#3a3b3d] hover:cursor-pointer"
       onClick={() => {
         setCurrentChat(chat);
       }}
     >
       <div className="flex items-center w-full">
         <img
-          src={!chat.groupChat ? "https://api.multiavatar.com/mann%20male.svg" : "group.png.png"}
+          src={!chat.groupChat ? avatar : "group.png.png"}
           className="h-12 w-12"
           alt=""
         />
-        <div className="flex flex-col px-4 w-full">
+        <div className="flex flex-col px-4 w-full"> 
           <div className="flex justify-between w-full items-center">
-            <p>{name}</p>
+            <p>{name.split(" ")[0]}</p>
             <p className={`text-xs ${ isUnread ? `text-green-600` :``}`}>{chat.lastMessage ? formattedTime : ""}</p>
           </div>
   

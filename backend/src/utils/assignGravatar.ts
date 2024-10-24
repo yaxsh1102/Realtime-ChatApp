@@ -7,7 +7,7 @@ export const assignGravatr = (gender:string)=>{
 
     } else {
         const num = Math.floor(Math.random()*(3-0+1)+0)
-        return mens[num]
+        return mens[num] 
 
     }
 }

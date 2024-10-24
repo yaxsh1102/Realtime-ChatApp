@@ -16,6 +16,8 @@ exports.leaveGroup = exports.getSearchResults = exports.getGroupChatDetails = ex
 const chat_schema_1 = require("../models/chat.schema");
 const user_schema_1 = require("../models/user.schema");
 const mongoose_1 = __importDefault(require("mongoose"));
+const socket_1 = require("../socket");
+const socket_2 = require("../socket");
 let errResponse = {
     success: false,
     message: ""
@@ -78,6 +80,9 @@ const createChat = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             select: "name email avatar"
         })
             .sort({ updatedAt: -1 });
+        if (createdChat) {
+            (0, socket_1.newChatIO)(id, "newChat", createdChat);
+        }
         return res.status(200).json({
             success: true,
             message: "New Chat Created",
@@ -111,11 +116,13 @@ const getChats = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             .populate({ path: "admin",
             select: "name email avatar"
         })
+            .select("+unreadBy")
             .sort({ updatedAt: -1 });
         if (!data) {
             errResponse.message = "No Chat Found";
             return res.status(400).json(errResponse);
         }
+        console.log(data);
         const successresponse = {
             success: true,
             message: "Chats Fetched",
@@ -155,6 +162,11 @@ const createGroupChat = (req, res) => __awaiter(void 0, void 0, void 0, function
             .populate({
             path: "admin",
             select: "username name avatar email"
+        });
+        members.forEach((member) => {
+            if (member !== req.user.id) {
+                group && (0, socket_1.newChatIO)(member, "newChat", group);
+            }
         });
         const successResponse = {
             success: true,
@@ -213,6 +225,12 @@ const addToGroupChat = (req, res) => __awaiter(void 0, void 0, void 0, function*
             select: "name email avatar"
         })
             .sort({ updatedAt: -1 });
+        data === null || data === void 0 ? void 0 : data.members.forEach((member) => {
+            (0, socket_1.updateGroupIO)(member._id.toString(), "updateGroup", data);
+        });
+        if (data) {
+            (0, socket_1.newChatIO)(member, "newChat", data);
+        }
         const success = {
             success: true,
             message: "Added Member",
@@ -266,6 +284,10 @@ const removeFromGroupChat = (req, res) => __awaiter(void 0, void 0, void 0, func
             select: "name email avatar"
         })
             .sort({ updatedAt: -1 });
+        (0, socket_2.removeFromGroupIO)(member, "removeFromGroupChat", group);
+        newGroup === null || newGroup === void 0 ? void 0 : newGroup.members.forEach((groupMember) => {
+            (0, socket_1.updateGroupIO)(groupMember._id.toString(), "updateGroup", newGroup);
+        });
         const success = {
             success: true,
             message: "Member Removed Successfully",
@@ -291,6 +313,9 @@ const deleteGroupChat = (req, res) => __awaiter(void 0, void 0, void 0, function
             errResponse.message = "No Such Group Exists";
             return res.status(400).json(errResponse);
         }
+        deletedChat.members.forEach((member) => {
+            (0, socket_1.deleteGroupIO)(member.toString(), "deleteGroup", group);
+        });
         return res.status(200).json({
             success: true,
             message: "Group Deleted"
@@ -356,12 +381,12 @@ const leaveGroup = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     try {
         const { group } = req.body;
         const id = req.user.id;
+        console.log("Hiii");
         if (!group) {
             errResponse.message = "Missing Parameters";
             return res.status(400).json(errResponse);
         }
-        const groupExists = yield chat_schema_1.Chat.findOne({ _id: group, groupChat: true })
-            .populate("admin");
+        let groupExists = yield chat_schema_1.Chat.findOne({ _id: group, groupChat: true }).populate("admin");
         if (!groupExists) {
             errResponse.message = ("No Such Group Exists");
             return res.status(400).json(errResponse);
@@ -378,6 +403,26 @@ const leaveGroup = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             }
         }
         yield groupExists.save();
+        console.log("pink");
+        const newGroup = yield chat_schema_1.Chat.findOne({ _id: group, groupChat: true })
+            .populate({
+            path: "members",
+            select: "name email avatar _id"
+        })
+            .populate({
+            path: "lastMessage",
+            populate: {
+                path: "sender",
+                select: " avatar email name"
+            }
+        })
+            .populate({ path: "admin",
+            select: "name email avatar"
+        });
+        newGroup === null || newGroup === void 0 ? void 0 : newGroup.members.forEach((member) => {
+            (0, socket_1.updateGroupIO)(member._id.toString(), "updateGroup", newGroup);
+        });
+        (0, socket_2.removeFromGroupIO)(req.user.id, "leaveGroup", group);
         const success = {
             success: true,
             message: "Exited Successfully",
@@ -385,6 +430,8 @@ const leaveGroup = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         return res.status(200).json(success);
     }
     catch (err) {
+        errResponse.message = "Error Occured";
+        return res.status(500).json(errResponse);
     }
 });
 exports.leaveGroup = leaveGroup;

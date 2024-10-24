@@ -12,14 +12,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.login = exports.signup = void 0;
+exports.getUser = exports.login = exports.signup = void 0;
 const user_schema_1 = require("../models/user.schema");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const assignGravatar_1 = require("../utils/assignGravatar");
+let errResponse = {
+    success: false,
+    message: ""
+};
 const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { name, email, password } = req.body;
-        if (!name || !email || !password) {
+        const { name, email, password, gender } = req.body;
+        if (!name || !email || !password || !password) {
             const errorResponse = {
                 success: false,
                 message: 'All fields (name, username, email, password) are required.',
@@ -27,6 +32,7 @@ const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             return res.status(400).json(errorResponse);
         }
         const existingUser = yield user_schema_1.User.findOne({ email: email });
+        console.log(1212);
         if (existingUser) {
             const errorResponse = {
                 success: false,
@@ -39,13 +45,28 @@ const signup = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             name,
             email,
             password: hashedPassword,
-            avatar: "ht",
+            avatar: "https://api.multiavatar.com/" + (0, assignGravatar_1.assignGravatr)(gender) + ".svg",
         });
+        const payload = {
+            email: newUser.email,
+            id: newUser._id,
+        };
+        const token = jsonwebtoken_1.default.sign(payload, process.env.JWT_SECRET, {
+            expiresIn: "2h"
+        });
+        const userData = {
+            name: newUser.name,
+            email: newUser.email,
+            avatar: newUser.avatar,
+            _id: newUser._id
+        };
+        const data = { user: userData, token: token };
         const successResponse = {
             success: true,
             message: "User Registered Successfully",
+            data: data
         };
-        return res.status(200).json(newUser);
+        return res.status(200).json(successResponse);
     }
     catch (err) {
         console.log(err);
@@ -69,14 +90,16 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             return res.status(400).json(errorResponse);
         }
         const user = yield user_schema_1.User.findOne({ email: email });
+        console.log(user);
         if (!user) {
             const errorResponse = {
                 success: false,
-                message: 'No such User Found.',
+                message: 'No Such User Found.',
             };
             return res.status(400).json(errorResponse);
         }
         if (!(yield bcrypt_1.default.compare(password, user.password))) {
+            console.log("hii");
             const errorResponse = {
                 success: false,
                 message: 'Incorrect Password',
@@ -114,3 +137,19 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.login = login;
+const getUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const data = yield user_schema_1.User.findById(req.user.id).select("name email _id avatar");
+        const successResponse = {
+            success: true,
+            message: "User Details Fetched",
+            data: data
+        };
+        return res.status(200).json(successResponse);
+    }
+    catch (err) {
+        errResponse.message = "Internal Server Error";
+        return res.status(500).json(errResponse);
+    }
+});
+exports.getUser = getUser;

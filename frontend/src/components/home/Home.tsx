@@ -36,37 +36,7 @@ const Home = () => {
   if(!localStorage.getItem("token")){
     navigate("/login")
   }
-  useEffect(()=>{
-   
-    async function getChats (){
-    setLoader(true)
-    try{
-      const data = await fetch(process.env.REACT_APP_BACKEND_URL as string + "chat/get-chats" , {
-        method:"GET" ,
-        headers:{
-          "content-type":"application/json" ,
-          "Authorization":`Bearer ${localStorage.getItem("token")}`
-        }
-      } )
-    const resp = await data.json()
-    const sortedChats = resp.data.sort((a:Chat, b:Chat) => {
-      const timeA = a.lastMessage?.createdAt ? new Date(a.lastMessage.createdAt).getTime() : 0;
-      const timeB = b.lastMessage?.createdAt ? new Date(b.lastMessage.createdAt).getTime() : 0;
-    
-      return timeB - timeA;
-    });
-    
-    setChats(sortedChats)
- 
-    }
-    catch(err){
-      navigate("/login")
-    
-    }
-  }
-    getChats()
 
-  } , [])
 
   useEffect(() => {
     const initializeSocket = () => {

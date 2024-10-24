@@ -8,7 +8,7 @@ import { modifyGroupDTO } from '../dtos/modifyGroup.dto';
 import mongoose  from 'mongoose';
 import { SuccessResponseDTO } from './../dtos/success.dto';
 import { searchUserDTO } from '../dtos/searchuser.dto';
-import { deleteGroupIO, updateGroupIO } from '../socket';
+import { deleteGroupIO, emitMessage, newChatIO, updateGroupIO } from '../socket';
 import { removeFromGroupIO } from '../socket';
 
 let errResponse:ErrorResponseDTO={
@@ -88,6 +88,16 @@ export const createChat = async(req: AuthenticatRequest<null>, res: Response)=>{
                 select:"name email avatar"
                 })
             .sort({updatedAt:-1})
+
+
+            if(createdChat){
+
+
+            newChatIO(id , "newChat" , createdChat)
+            }
+
+
+            
 
           
 
@@ -208,6 +218,13 @@ export const createGroupChat = async(req:AuthenticatRequest<createGroupChatDTO> 
                                                                 })
 
 
+                members.forEach((member)=>{
+                    if(member!==req.user.id){
+                      group &&   newChatIO(member , "newChat" , group)
+                    }
+                })
+
+
               
 
             const successResponse : SuccessResponseDTO<typeof group>={
@@ -289,6 +306,11 @@ export const addToGroupChat = async(req:AuthenticatRequest<modifyGroupDTO> , res
         data?.members.forEach((member)=>{
            updateGroupIO(member._id.toString() , "updateGroup" , data) 
         })
+
+
+        if(data){
+        newChatIO(member , "newChat" , data)
+        }
 
 
 

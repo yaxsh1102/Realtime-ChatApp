@@ -98,7 +98,6 @@ export const updateGroupIO=(userId:string , event:string , data:IChat)=>{
       }
 
     if(users[userId]){
-        console.log("pink")
         ioGlobal.to(users[userId].id).emit(event , data)
     }
 
@@ -114,7 +113,6 @@ export const removeFromGroupIO=(userId:string , event:string , chatId:string)=>{
       }
 
     if(users[userId]){
-        console.log("pink")
         ioGlobal.to(users[userId].id).emit(event  , chatId)
     }else{
         console.log("hii")
@@ -134,6 +132,18 @@ export const deleteGroupIO = (userId:string , event:string , chatId:string)=>{
         console.log("pink")
         ioGlobal.to(users[userId].id).emit(event  , chatId)
     }
+
+}
+
+export const newChatIO = (userId:string , event:string , data:IChat)=>{
+  if (!ioGlobal) {
+    console.error("Socket.io is not initialized");
+    return;
+  }
+
+if(users[userId]){
+    ioGlobal.to(users[userId].id).emit(event  , data)
+}
 
 }
 

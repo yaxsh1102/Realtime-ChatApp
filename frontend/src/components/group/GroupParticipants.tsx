@@ -1,4 +1,3 @@
-import React from 'react'
 import { MdDeleteForever } from 'react-icons/md'
 import { User } from '../../interfaces/interfaces'
 import { useAppContext } from '../../context/AppContext'
@@ -58,15 +57,12 @@ async function leaveGroupHandler(){
       }
        , body:JSON.stringify({group:currentChat?._id })
     }) 
-    console.log("hiiiiii")
     const resp = await data.json()
     console.log(resp)
       const newChats = chats.filter((chat)=>chat._id!==currentChat?._id)
       setShowGroupInfo(false)
-
       setChats(newChats)
       setCurrentChat(null) 
-    console.log(1212122)
 
   }catch(err){
   console.log(err)
@@ -75,22 +71,41 @@ async function leaveGroupHandler(){
 
 }
 
+console.log(member)
+
  
   return (
-    <div className='w-full border-b-[0.1px] border-b-slate-700'>
+    <div className='w-full border-b-[1px] border-b-slate-500 text-white hover:text-slate-300'>
          <div className='flex justify-between  items-center h-16 mt-2 w-full'>
             <div className='flex items-center w-full'>
                 <img src={member?.avatar} height={16} width={16} className='lg:h-12 lg:w-12 md:h-8 md:w-8' alt="" />
             <div className='flex flex-col px-4 w-full'>
-                <div className='flex gap-x-2 w-full items-center'>
-                <p>{member?.name}</p>
-                {member?._id === currentChat?.admin?._id &&  <p className='w-18 text-sm px-2 text-center rounded-full bg-gray-600'> admin</p>}
+                <div className='flex gap-x-2 w-full items-center'>  
+                <p>{member._id === user?._id ? "You" : member.name}</p>
+                {member?._id === currentChat?.admin?._id &&  <p className='w-18 text-sm px-2 text-center rounded-full bg-gray-600 flex   justify-center items-center my-auto'> admin</p>}
                 </div>
 
                 <p className='text-xs '>{member?.email}</p>
             </div>
 
-           {currentChat?.admin?._id===user?._id && (member._id===currentChat?.admin?._id ? (<p onClick={leaveGroupHandler}><IoMdExit className='w-8 h-8'></IoMdExit></p>) :(<p><MdDeleteForever className='w-8 h-8' onClick={removeFromGroupHandler}></MdDeleteForever></p>) ) }
+
+            {
+                     !isSearchResult ? (
+                        currentChat?.admin?._id === user?._id && (
+                          member._id === currentChat?.admin?._id ? (
+                            <p onClick={leaveGroupHandler}>
+                              <IoMdExit className='w-8 h-8' />
+                            </p>
+                          ) : (
+                            <p>
+                              <MdDeleteForever className='w-8 h-8' onClick={removeFromGroupHandler} />
+                            </p>
+                          )
+                        )
+                      ) : (
+                        ""
+                      )
+}
 
 
             </div>  

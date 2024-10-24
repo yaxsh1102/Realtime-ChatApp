@@ -76,7 +76,7 @@ async function deleteGroupHandler(){
       </p>
 
       <div className="flex flex-col items-center p-4">
-        <img src="logo512.png" className="w-16 h-16" alt="Group logo" />
+        <img src="group.png.png" className="w-16 h-16" alt="Group logo" />
         <p className="text-2xl mt-2">{currentChat?.name}</p>
         <p className="text-sm">{`Group : ${currentChat?.members.length} participants`}</p>
       </div>
@@ -87,7 +87,7 @@ async function deleteGroupHandler(){
           <p>{`${currentChat?.members.length} participants`}</p>
         </div>
 
-        <div className="flex-grow overflow-y-auto mb-4">
+        <div className="flex-grow overflow-y-auto mb-4 bg-[#262729]">
           {currentChat?.members.map((member)=><GroupParticipants member={member} isAdmin={currentChat.admin?._id === user?._id}></GroupParticipants>)}
         
         </div>
@@ -96,14 +96,14 @@ async function deleteGroupHandler(){
           
         {currentChat?.admin?._id===user?._id ? ( 
 
-          <><button className="bg-blue-500 text-white py-2 px-4 rounded" onClick={()=>{setCreateChat(true) ;setShowAddMembers(true) }}>
+          <><button className="bg-indigo-500 text-white py-2 px-4 rounded" onClick={()=>{setCreateChat(true) ;setShowAddMembers(true) }}>
             Add Participant
           </button>
-          <button className="bg-red-500 text-white py-2 px-4 rounded flex items-center justify-center" onClick={deleteGroupHandler}>
+          <button className="bg-slate-700 text-white py-2 px-4 rounded flex items-center justify-center" onClick={deleteGroupHandler}>
             <MdDeleteForever className="mr-2" />
             Delete Group
           </button>
-          </>) : ( <><button className="bg-red-500 text-white py-2 px-4 rounded flex items-center justify-center" onClick={leaveGroupHandler}>
+          </>) : ( <><button className="bg-slate-700 text-white py-2 px-4 rounded flex items-center justify-center" onClick={leaveGroupHandler}>
             <IoMdExit className="mr-2" />
             Leave Group
           </button>

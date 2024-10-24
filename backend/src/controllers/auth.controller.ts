@@ -18,7 +18,7 @@ export const signup  = async (req: Request<{} , {} , SignupDTO>, res: Response):
   try {
     const { name, email, password  , gender} = req.body;
 
-    if (!name    || !email || !password) {
+    if (!name    || !email || !password || !password) {
       const errorResponse: ErrorResponseDTO = {
         success: false,
         message: 'All fields (name, username, email, password) are required.',
@@ -27,6 +27,7 @@ export const signup  = async (req: Request<{} , {} , SignupDTO>, res: Response):
     }
 
     const existingUser = await User.findOne({email:email})
+    console.log(1212)
 
     if(existingUser){
         const errorResponse: ErrorResponseDTO = {
@@ -44,7 +45,7 @@ export const signup  = async (req: Request<{} , {} , SignupDTO>, res: Response):
         name ,
         email ,
         password:hashedPassword ,
-        avatar: "https://api.multiavatar.com/" + assignGravatr(gender) ,
+        avatar: "https://api.multiavatar.com/" + assignGravatr(gender)  + ".svg",
 
 
     })
@@ -109,7 +110,7 @@ export const login  = async(req:Request<{} ,{} ,LoginDTO > , res:Response): Prom
     if(!user){
         const errorResponse: ErrorResponseDTO = {
             success: false,
-            message: 'No such User Found.',
+            message: 'No Such User Found.',
           };
           return res.status(400).json(errorResponse);
         }

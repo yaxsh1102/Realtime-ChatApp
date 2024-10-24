@@ -7,10 +7,10 @@ import { useAppContext } from '../../context/AppContext';
 
 
 const useSocketChats = (currentChat :Chat|null) => {
-  const { chats, setChats , setCurrentChat ,setShowGroupInfo} = useAppContext();
+  const {  setChats , setCurrentChat ,setShowGroupInfo} = useAppContext();
 
   const handleNewChat = useCallback((data: Chat) => {
-    setChats((prevChats) => [...prevChats, data]);
+    setChats((prevChats) => [data , ...prevChats]);
   }, [setChats]);
 
   const handleGroupDeleted = useCallback((chatId: string) => {
@@ -54,6 +54,7 @@ const useSocketChats = (currentChat :Chat|null) => {
     socket.off('deleteGroup');
     socket.off('updateGroup');
     socket.off('removeFromGroupChat')
+    
 
 
 
