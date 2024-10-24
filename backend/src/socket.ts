@@ -60,14 +60,12 @@ const initializeSocket = (io: Server) => {
 
       data.members.forEach((member: User) => {
         if (users[member._id]) {
-          console.log("Sending typing indication to:", member._id);
-          socket.to(member._id).emit("showTyping");
+          socket.to(member._id).emit("showTyping" , data.name);
         }
       });
     });
 
     socket.on("stopTyping", (data) => {
-      console.log("Stop typing event received:", data);
 
       data.members.forEach((member: User) => {
         if (users[member._id]) {
@@ -78,7 +76,7 @@ const initializeSocket = (io: Server) => {
   });
 };
 
-export const emitMessage = (userId: string, event: string, data: MessageToBeSent) => {
+export const emitMessage = <T>(userId: string, event: string, data: T) => {
   if (!ioGlobal) {
     console.error("Socket.io is not initialized");
     return;

@@ -8,6 +8,7 @@ import { LoginDTO } from "../dtos/login.dto";
 import jwt from "jsonwebtoken"
 import { AuthenticatRequest
  } from "../middlewares/auth.middleware";
+import { assignGravatr } from "../utils/assignGravatar";
  let errResponse:ErrorResponseDTO={
   success:false ,
   message:""
@@ -15,7 +16,7 @@ import { AuthenticatRequest
 
 export const signup  = async (req: Request<{} , {} , SignupDTO>, res: Response):Promise<Response> => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password  , gender} = req.body;
 
     if (!name    || !email || !password) {
       const errorResponse: ErrorResponseDTO = {
@@ -43,18 +44,34 @@ export const signup  = async (req: Request<{} , {} , SignupDTO>, res: Response):
         name ,
         email ,
         password:hashedPassword ,
-        avatar:"ht" ,
+        avatar: "https://api.multiavatar.com/" + assignGravatr(gender) ,
 
 
     })
+    const payload = {
+      email:newUser.email ,
+      id:newUser._id ,
+  }
+  const token = jwt.sign(payload , process.env.JWT_SECRET as string , {
+      expiresIn:"2h"
 
-    const successResponse :SuccessResponseDTO<typeof newUser> ={
+  })
+  const userData = {
+    name:newUser.name ,
+    email:newUser.email ,
+    avatar:newUser.avatar , 
+    _id:newUser._id
+  }
+  const data = {user:userData , token:token}
+
+    const successResponse :SuccessResponseDTO<typeof data> ={
         success:true ,
         message:"User Registered Successfully",
+        data:data
 
     }
 
-    return res.status(200).json(newUser)
+    return res.status(200).json(successResponse)
 
 
   } catch (err) {
@@ -104,7 +121,6 @@ export const login  = async(req:Request<{} ,{} ,LoginDTO > , res:Response): Prom
           };
           return res.status(400).json(errorResponse);
         }
-        console.log("pink")
 
 
         const payload = {

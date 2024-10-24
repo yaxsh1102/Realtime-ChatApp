@@ -10,6 +10,7 @@ import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import socket from '../../socket';
 import useSocketChats from '../hooks/useSocketChats';
+import { Chat } from '../../interfaces/interfaces';
 const Home = () => {
 
 
@@ -30,7 +31,7 @@ const Home = () => {
   
 
 
-  const { setChats  , setLoader , createChat  , showMenu  , showGroupInfo  , user} = appContext;
+  const { setChats  , setLoader , createChat  , showMenu  , showGroupInfo  , user , currentChat} = appContext;
 
   if(!localStorage.getItem("token")){
     navigate("/login")
@@ -48,7 +49,14 @@ const Home = () => {
         }
       } )
     const resp = await data.json()
-    setChats(resp.data)
+    const sortedChats = resp.data.sort((a:Chat, b:Chat) => {
+      const timeA = a.lastMessage?.createdAt ? new Date(a.lastMessage.createdAt).getTime() : 0;
+      const timeB = b.lastMessage?.createdAt ? new Date(b.lastMessage.createdAt).getTime() : 0;
+    
+      return timeB - timeA;
+    });
+    
+    setChats(sortedChats)
  
     }
     catch(err){
@@ -95,7 +103,7 @@ const Home = () => {
       </div>
 
       <div className='md:hidden flex w-full h-full overflow-y-hidden'>
-        <ChatPage />
+        {currentChat ? <ChatPage></ChatPage> :<Chats></Chats>}
       </div>
 
       {showMenu && (

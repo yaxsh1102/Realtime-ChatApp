@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAppContext } from '../../context/AppContext';
 
 interface FormData {
   name:string
@@ -9,11 +10,15 @@ interface FormData {
 
 const Signup: React.FC = () => {
   const navigate = useNavigate()
+  const isValidEmail =/ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+
   const [formData, setFormData] = useState<FormData>({
     name:"" ,
     email: '',
     password: ''
   });
+
+  const {setUser} = useAppContext()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -23,11 +28,14 @@ const Signup: React.FC = () => {
     }));
   };
 
-  const loginHandler = () => {
+  const signupHandler = () => {
     const { email, password , name } = formData;
     if (!email || !password || !name) {
       return;
     }
+    // if(isValidEmail.test(email)){
+
+    // }
     void signup(name , email, password);
   };
 
@@ -46,7 +54,10 @@ const Signup: React.FC = () => {
       console.log(resp)
 
       if (resp.success) {
-        navigate("/login")
+        localStorage.setItem("token" , resp.data.token)
+        setUser(resp.data.user)
+
+        navigate("/")
       }
     } catch (err) {
       console.error('Login error:', err);
@@ -108,7 +119,7 @@ const Signup: React.FC = () => {
 
         <button
           className="w-full px-4 py-2 font-bold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out mt-16"
-          onClick={loginHandler}
+          onClick={signupHandler}
         >
           Signup
         </button>

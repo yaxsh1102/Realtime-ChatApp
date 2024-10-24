@@ -9,6 +9,7 @@ import { contentDTO } from "../dtos/content.dto";
 import { User } from "../models/user.schema";
 import { IChat } from "../models/chat.schema";
 import { IMessage } from "../models/message.schema";
+import { emitMessage } from "../socket";
 
 let errResponse:ErrorResponseDTO={
     success:false ,
@@ -75,6 +76,7 @@ export const sendMessage = async(req:AuthenticatRequest<contentDTO> , res:Respon
             return res.status(400).json(errResponse)
             
         }
+        console.log("pejfjsbvbhfvbshfvefvgevfg")
 
         const chat:IChat | null = await Chat.findOne({_id:chatId})
         if(!chat){
@@ -93,24 +95,41 @@ export const sendMessage = async(req:AuthenticatRequest<contentDTO> , res:Respon
 
 
         chat.lastMessage=msgId ;
-        await chat.save()
 
 
-        const newMessage =await Message.find({chat:chatId})
-                                                    .populate({
-                                                        path:"sender" , 
-                                                        select:"name username avatar"
-                                                    })
-                                                    .populate("chat")
+        const newMessage =await Message.findOne({_id:msgId})
+        .populate({
+            path:"sender" , 
+            select:"name username avatar"
+        })
+
+        if (!newMessage) {
+            errResponse.message = "Message creation failed";
+            return res.status(500).json(errResponse);
+            }
+
+
+    chat.members.forEach((member)=>{
+        if(member.toString()!==req.user.id){
+            chat.unreadBy.push(member)
+     emitMessage<typeof newMessage>(member.toString() , "receiveMessage" ,newMessage )
+        }
+    }) 
+    console.log("hhhhhhhhhhh")
+
+    chat.markModified("unreadBy")
+
+    await chat.save()
+
+    console.log(chat)
 
 
 
 
 
-                    if (!newMessage) {
-                    errResponse.message = "Message creation failed";
-                    return res.status(500).json(errResponse);
-                    }
+
+
+                
                 
                     const successResponse: SuccessResponseDTO<typeof newMessage> = {
                     success: true,
@@ -119,6 +138,7 @@ export const sendMessage = async(req:AuthenticatRequest<contentDTO> , res:Respon
                     };
  
                     return res.status(200).json(successResponse);
+
                                                           
 
         
@@ -137,3 +157,28 @@ export const sendMessage = async(req:AuthenticatRequest<contentDTO> , res:Respon
 
     }
 }
+
+
+
+export const markChatAsRead = async(req: AuthenticatRequest<null>, res: Response) => {
+    try {
+      const { chatId } = req.params;
+      
+      await Chat.updateOne(
+        { _id: chatId },
+        { $pull: { unreadBy: req.user.id } }
+      );
+  
+      return res.status(200).json({
+        success: true,
+        message: "Chat marked as read"
+      });
+  
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({
+        success: false,
+        message: "Error marking chat as read"
+      });
+    }
+  };

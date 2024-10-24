@@ -5,15 +5,13 @@ export interface IChat extends Document{
     groupChat:boolean , 
     lastMessage?:mongoose.Types.ObjectId ,
     members:mongoose.Types.ObjectId[] ,
-    admin:mongoose.Types.ObjectId
+    admin:mongoose.Types.ObjectId ,
+    unreadBy:mongoose.Types.ObjectId[]
 
 
 }
 
-type SocketEventPayload = Omit<IChat, '_id' | '__v'> & {
-    _id: string; 
-    __v?: number;
-  };
+
 
 
 const chatSchema = new mongoose.Schema<IChat>({
@@ -44,7 +42,9 @@ const chatSchema = new mongoose.Schema<IChat>({
         type:mongoose.Schema.Types.ObjectId,
         ref:"User"
 
-    }
+    } ,
+    unreadBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+
 
     
 },

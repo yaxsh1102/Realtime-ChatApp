@@ -1,5 +1,9 @@
 import React, { createContext, ReactNode, useState, useContext } from "react";
 import { Chat, User , ChatMessages, Message } from "../interfaces/interfaces";
+import toast from "react-hot-toast"
+import { Toaster } from "react-hot-toast";
+
+
 
 interface AppContextType {
   user: User|null;
@@ -26,8 +30,8 @@ interface AppContextType {
   setShowGroupInfo:React.Dispatch<React.SetStateAction<boolean>>  ,
   addMembers:boolean ,
   setShowAddMembers:React.Dispatch<React.SetStateAction<boolean>>  ,
-  onlineMember:string[] ,
-  setOnlineMember:React.Dispatch<React.SetStateAction<string[]>>
+  showToast:(message:string)=>void
+
   
 
 }
@@ -49,9 +53,22 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const[currentChat , setCurrentChat] = useState<Chat|null>(null)
   const[showMenu , setShowMenu] = useState<boolean>(false)
   const[createChat , setCreateChat] = useState<boolean>(false)
-  const[showGroupInfo , setShowGroupInfo] = useState<boolean>(false)
+  const[showGroupInfo , setShowGroupInfo] = useState<boolean>(false) 
   const[addMembers , setShowAddMembers] = useState<boolean>(false)
-  const[onlineMember , setOnlineMember] = useState<string[]>([])
+
+  const showToast =(message:string)=>{
+    console.log(message)
+    toast.remove()
+    toast(message , {
+      duration:2000 ,
+      style: { 
+        borderRadius: '10px',
+        background: '#333',
+        color: '#fff',
+      },
+    })
+
+  }
 
 
   const contextValue: AppContextType = {
@@ -79,14 +96,15 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     setShowGroupInfo ,
     addMembers , 
     setShowAddMembers ,
-    onlineMember ,
-     setOnlineMember
+    showToast
+  
      
 
   };
 
   return (
     <AppContext.Provider value={contextValue}>
+      <Toaster/>
       {children}
     </AppContext.Provider>
   );
@@ -94,7 +112,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
 export const useAppContext = (): AppContextType => {
   const context = useContext(AppContext);
-  if (context === undefined) {
+  if (context === undefined) { 
     throw new Error("useAppContext must be used within an AppProvider");
   }
   return context;

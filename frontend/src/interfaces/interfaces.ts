@@ -19,7 +19,8 @@ export interface Chat {
     groupChat: boolean;
     lastMessage?: Message;  
     members: User[];
-    admin?:User
+    admin?:User;
+    unreadBy:string[]
 }
 
 

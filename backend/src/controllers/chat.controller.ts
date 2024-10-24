@@ -142,12 +142,14 @@ export const getChats = async(req : AuthenticatRequest<null> , res:Response)=>{
         .populate({path:"admin" ,  
             select:"name email avatar"
             })
+        .select("+unreadBy")
         .sort({updatedAt:-1})
 
         if(!data){
             errResponse.message="No Chat Found"
             return res.status(400).json(errResponse)
         }
+        console.log(data)
 
         const successresponse :SuccessResponseDTO<typeof data>={
             success:true ,

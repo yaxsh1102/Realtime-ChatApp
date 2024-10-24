@@ -13,7 +13,6 @@ interface MessageProps {
 const Message = ({ isRight = true, content, time, name, avatar }: MessageProps) => {
   const timeStr = extractTime(time);
   const { user, currentChat } = useAppContext() ;
-  console.log(name)
  
   return (
     <div className={`w-full flex ${isRight ? 'justify-end' : 'justify-start'}`}>

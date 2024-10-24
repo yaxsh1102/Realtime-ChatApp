@@ -1,21 +1,22 @@
-import React, { useContext, useState } from 'react';
+import React,{ useState } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { useNavigate } from 'react-router-dom';
-import socket from '../../socket';
-import { MdAlternateEmail } from 'react-icons/md';
+
 
 interface FormData {
   email: string;
-  password: string;
+  password: string; 
 }
 
 const Login: React.FC = () => {
-  const{user , setUser} = useAppContext()
+  const{ setUser , showToast} = useAppContext()
   const [formData, setFormData] = useState<FormData>({
     email: '',
     password: ''
   });
   const navigate = useNavigate()
+  const isValidEmail =/ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -28,9 +29,17 @@ const Login: React.FC = () => {
   const loginHandler = () => {
     const { email, password } = formData;
     if (!email || !password) {
+      showToast("All Fields Required")
       return;
     }
-    void login(email, password);
+  //   if(isValidEmail.test(email)){
+  //   void login(email, password);
+  // } else{
+  //   showToast("Valid Email Required")
+  // }
+    login(email , password)
+
+    
   };
 
   async function login(email: string, password: string) {
@@ -48,13 +57,15 @@ const Login: React.FC = () => {
       if (resp.success) {
         localStorage.setItem('token', resp.data.token);
         setUser(resp.data.user)
-        console.log(resp)
+        showToast("Login Successfull")
 
         navigate("/") 
+      } else {
+        showToast(resp.message)
       }
     } catch (err) {
-      console.log(err)
-              console.error('Login error:', err);
+      showToast("Error Occured")
+     
     }
   }
 

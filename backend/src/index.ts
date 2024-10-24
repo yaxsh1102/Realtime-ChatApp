@@ -7,6 +7,7 @@ import authRoutes from './routes/auth.routes';
 import chatRoutes from './routes/chat.routes';
 import messageRoutes from './routes/message.routes';
 import initializeSocket from './socket'; 
+import { Chat } from './models/chat.schema';
 
 const app = express();
 const server = http.createServer(app);
@@ -28,10 +29,12 @@ app.use(cors({
   origin: "*",
 }));
 
-// Routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/chat', chatRoutes);
 app.use('/api/v1/message', messageRoutes);
+
+
+
 
 connect();
 
