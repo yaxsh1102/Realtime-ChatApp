@@ -34,7 +34,7 @@ const[loading , setLoading] = useState<boolean>(false)
       showToast("All Fields Required")
       return;
     }
-    if(!isValidEmail.test(email)){
+    if(isValidEmail.test(email)){
     void login(email, password);
   } else{
     showToast("Valid Email Required")
@@ -52,6 +52,7 @@ const[loading , setLoading] = useState<boolean>(false)
         }
       } )
     }
+    awakeServer()
 
   } , [])
 
