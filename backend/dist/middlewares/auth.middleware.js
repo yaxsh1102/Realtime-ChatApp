@@ -22,24 +22,15 @@ if (jwt_secret === undefined) {
 }
 const AuthenticatedUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        let token = req.headers['authorization'];
-        if (!token) {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) {
             const errResponse = {
                 success: false,
                 message: "Authorization Token Required",
             };
             return res.status(401).json(errResponse);
         }
-        if (typeof token === 'string') {
-            token = token.split(' ')[1];
-        }
-        else {
-            const errorResponse = {
-                success: false,
-                message: "Invalid Authorization Token",
-            };
-            return res.status(400).json(errorResponse);
-        }
+        const token = authHeader.split(' ')[1];
         if (!token) {
             const errResponse = {
                 success: false,
@@ -63,7 +54,7 @@ const AuthenticatedUser = (req, res, next) => __awaiter(void 0, void 0, void 0, 
         next();
     }
     catch (err) {
-        console.log(err);
+        console.error('Auth middleware error:', err);
         const errResponse = {
             success: false,
             message: "Token Expired",

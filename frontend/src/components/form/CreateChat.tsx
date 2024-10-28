@@ -4,6 +4,8 @@ import GroupParticipants from '../group/GroupParticipants';
 import { useAppContext } from '../../context/AppContext';
 import { useDebounce } from '../hooks/useDebounce';
 import { User } from '../../interfaces/interfaces';
+import Loader from '../miscellaneous/Loader';
+import LoadingButton from '../miscellaneous/LoadingButton';
 
 
 
@@ -19,6 +21,7 @@ const CreateChat: React.FC = () => {
   const [selectedMembers, setSelectedMembers] = useState<User[]>(addMembers ? [] : [user as User]);
   const [isDropdownVisible, setIsDropdownVisible] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false); 
+  const [createLoading, setCreateLoading] = useState<boolean>(false); 
 
   useEffect(() => {
     if (searchTerm.length > 0) {
@@ -61,6 +64,9 @@ const CreateChat: React.FC = () => {
   }
 
   async function handleSearch(name: string) {
+    if(!chats){
+      return  null
+    }
     if (isGroupChat) {
       const filteredResults = Array.from(
         new Set(
@@ -71,7 +77,7 @@ const CreateChat: React.FC = () => {
         .filter(member => member && member.name.toLowerCase().includes(name.toLowerCase())) 
         .filter(member => !selectedMembers.some(selected => selected._id === member?._id)); 
   
-      setSearchResults(filteredResults as User[]); // Update the search results
+      setSearchResults(filteredResults as User[]); 
       setLoading(false);
     } else {
       try {
@@ -88,7 +94,6 @@ const CreateChat: React.FC = () => {
         setSearchResults(data.data);
         setLoading(false); 
       } catch (error) {
-        console.error('Error fetching users:', error);
         setSearchResults([]);
         setLoading(false);
       }
@@ -103,6 +108,7 @@ const CreateChat: React.FC = () => {
       return 
 
     }
+    setCreateLoading(true)
 
     try{
     const data = await fetch(`${process.env.REACT_APP_BACKEND_URL}chat/create-chat/${selectedMembers[1]._id}` , {
@@ -114,17 +120,25 @@ const CreateChat: React.FC = () => {
     })
     const resp = await data.json()
     if(resp.success){
+      if(!chats){
+        return ;
+      }
       setChats([resp.data , ...chats])
+    } else{
+      showToast(resp.message)
+
     }
-    setIsDropdownVisible(false)
-    setSearchTerm("")
-    setCreateChat(false)
-    console.log(resp)
+    
 
     
   }catch(err){
-    console.log(err)
+    showToast("Error Occured")
 
+  }finally{
+    setCreateLoading(false)
+    setIsDropdownVisible(false)
+    setSearchTerm("")
+    setCreateChat(false)
   }
 }
 async function createGroupChat (){
@@ -152,9 +166,10 @@ async function createGroupChat (){
      , body:JSON.stringify({name:groupName , members:ids})
   })
   const resp = await data.json()
-  console.log(resp)
   if(resp.success){
+    if(chats){
     setChats([ resp.data ,...chats ])
+    }
   } else {
     showToast("Error Occured")
 
@@ -162,12 +177,14 @@ async function createGroupChat (){
   setIsDropdownVisible(false)
   setSearchTerm("")
   setCreateChat(false)
+  setCreateLoading(false)
 
   
 }catch(err){
   showToast("Error Occured")
-console.log(err)
-}
+}finally{
+    setCreateLoading(false)
+  }
 }
 
 async function addToGroup (){
@@ -180,6 +197,7 @@ async function addToGroup (){
 
   const id = selectedMembers[0]._id;
   try{
+    setCreateLoading(true)
   const data = await fetch(`${process.env.REACT_APP_BACKEND_URL}chat/add-to-group`, {
     method:"POST" ,
     headers:{
@@ -189,8 +207,10 @@ async function addToGroup (){
      , body:JSON.stringify({group:currentChat?._id , member:id})
   })
   const resp = await data.json()
-  console.log(resp)
   if(resp.success){
+    if(!chats){
+      return 
+    }
     const newChats = chats.filter((chat)=>chat._id!==currentChat?._id)
     setChats([...newChats , resp.data])
     setCurrentChat(resp.data)
@@ -204,7 +224,9 @@ async function addToGroup (){
 
   
 }catch(err){
-console.log(err)
+}
+finally{
+  setCreateLoading(false)
 }
 }
 
@@ -217,6 +239,7 @@ console.log(err)
             checked={isGroupChat}
             onChange={() => {setIsGroupChat(!isGroupChat) ; setSelectedMembers([user as User])}}
             className="sr-only peer"
+            disabled={createLoading}
           />
           <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-indigo-600"></div>
           <span className="ms-3 text-sm sm:text-base font-medium text-white">
@@ -303,20 +326,20 @@ console.log(err)
       { !addMembers ? (
         <>
             <button 
-              className="w-[48%] h-8 bg-indigo-600 text-white rounded" 
+              className="w-[48%] h-8 bg-indigo-600 text-white rounded flex justify-center items-center" disabled={createLoading}
               onClick={() => {
                 isGroupChat ? createGroupChat() : createOnetoOneChat();
         }}
       >
-                  Create
+                  {createLoading ? <LoadingButton/> :"Create"}
       </button>
           
-        <button className="w-[48%] h-8 bg-slate-800 text-white rounded" onClick={()=>{setCreateChat(false)}}>
+        <button className="w-[48%] h-8 bg-slate-800 text-white rounded" onClick={()=>{setCreateChat(false)}} disabled={createLoading}>
           Cancel
         </button>
         </>
       ) :( <button 
-        className="w-[48%] h-8 bg-indigo-600 text-white rounded" 
+        className="w-[48%] h-8 bg-indigo-600 text-white rounded" disabled={createLoading}
         onClick={() => {
           addToGroup()
   }}

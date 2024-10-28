@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
+import Loader from '../miscellaneous/Loader';
+import LoadingButton from '../miscellaneous/LoadingButton';
 
 interface FormData {
   name: string;
@@ -12,6 +14,8 @@ interface FormData {
 const Signup: React.FC = () => {
   const navigate = useNavigate();
   const isValidEmail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  const[loading , setLoading] = useState<boolean>(false)
+
 
   const [formData, setFormData] = useState<FormData>({
     name: '',
@@ -43,6 +47,7 @@ const Signup: React.FC = () => {
   };
 
   async function signup(name: string, email: string, password: string, gender: string) {
+    setLoading(true)
     try {
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL as string}auth/signup`, {
         method: 'POST',
@@ -63,6 +68,8 @@ const Signup: React.FC = () => {
     } catch (err) {
       console.log(err)
       showToast("Error Occured")
+    }finally{
+      setLoading(false)
     }
   }
 
@@ -134,8 +141,9 @@ const Signup: React.FC = () => {
         <button
           className="w-full px-4 py-2 font-bold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out mt-16"
           onClick={signupHandler}
+          disabled={loading}
         >
-          Signup
+          {loading ? <LoadingButton></LoadingButton> :"Signup"}
         </button>
 
         <div className="relative my-6">

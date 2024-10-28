@@ -47,7 +47,7 @@ const Chats:FC = () => {
     
     }
   }
-    getChats()
+   !chats &&  getChats()
 
   } , [])
 

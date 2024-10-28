@@ -8,6 +8,7 @@ import useSocketMessages from '../hooks/useSocketMessages';
 import useSocketChats from '../hooks/useSocketChats';
 import { FaArrowLeft } from "react-icons/fa";
 import Loader from '../miscellaneous/Loader';
+import { Chat } from '../../interfaces/interfaces';
 
 const ChatPage: React.FC = () => {
   const [message, setMessage] = useState<string>("");
@@ -23,7 +24,6 @@ const ChatPage: React.FC = () => {
     chatMessages,
     setCurrentMessages,
     currentMessages,
-    setLoader,
     setShowGroupInfo,
     setCurrentChat,
     setChats,
@@ -58,11 +58,10 @@ const ChatPage: React.FC = () => {
       setChatMessages(prev => [...prev, { chatId: currentChat._id, messages: data.data }]);
       setCurrentMessages(data.data);
     } catch (error) {
-      console.error('Error fetching messages:', error);
     } finally {
       setLoading(false);
     }
-  }, [currentChat, setChatMessages, setCurrentMessages, setLoader]);
+  }, [currentChat, setChatMessages, setCurrentMessages]);
 
   useSocketMessages(setCurrentMessages);
   useSocketChats(currentChat);
@@ -101,11 +100,17 @@ const ChatPage: React.FC = () => {
         };
 
         setCurrentChat(updatedChat);
-        setChats((prevChats) =>
-          prevChats.map((oldChat) => (oldChat._id === currentChat._id ? updatedChat : oldChat))
-        );
+       
+        setChats((prevChats) => {
+          if (!prevChats) {
+            return null; 
+          }
+          return prevChats.map((oldChat) => 
+            oldChat._id === currentChat?._id ? updatedChat : oldChat
+          );
+        });
+        
       } catch (error) {
-        console.error('Error marking messages as read:', error);
       }
     };
 
@@ -155,7 +160,76 @@ const ChatPage: React.FC = () => {
   }, [currentChat, user]);
 
   const sendMessageHandler = async () => {
-    if (!currentChat || message.trim().length === 0) return;
+    if (!currentChat || message.trim().length === 0 || !user) return;
+    const messageData={
+      content:message ,
+      createdAt:  new Date().toISOString()
+    }
+
+
+    let newMessage={
+      _id:messageData.createdAt  ,
+      content:message ,
+      sender:user ,
+      createdAt:messageData.createdAt ,
+      chat:currentChat._id
+    }
+
+    // setCurrentMessages(prev => [...prev, newMessage]);
+    // setChatMessages((prevChatMessages: ChatMessages[]) => {
+    //   const chatExists = prevChatMessages.some(chat => chat.chatId === currentChat._id);
+    
+    //   if (!chatExists) {
+    //     return [...prevChatMessages, {
+    //       chatId: currentChat._id,
+    //       messages: [newMessage]
+    //     }];
+    //   }
+    
+    //   return prevChatMessages.map((chatMessages) => {
+    //     if (chatMessages.chatId === currentChat._id) {
+    //       return {
+    //         chatId: currentChat._id,
+    //         messages: [...chatMessages.messages, newMessage]
+    //       };
+    //     }
+    //     return chatMessages;
+    //   });
+    // });
+    handleStopTyping();
+    setMessage("");
+    setTimeout(scrollToBottom, 100);
+    if(!chats){
+      return
+    }
+
+    const newChats: Chat[] =   chats?.map((chat) => {
+      
+      if (chat._id === currentChat._id) {
+       
+      
+
+        return {
+          ...chat,
+          lastMessage:newMessage , 
+        };
+      }
+
+      
+    
+      return chat; 
+    });
+    
+
+    const updatedChats = newChats.sort((a, b) => {
+      const dateA = new Date(a.lastMessage?.createdAt || 0).getTime();
+      const dateB = new Date(b.lastMessage?.createdAt || 0).getTime();
+      return dateB - dateA;
+    });
+
+    setChats(updatedChats);  
+
+    socket.emit("sendNewMessage" , {message:newMessage , members: currentChat?.members})
 
     try {
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}message/send-message/${currentChat._id}`, {
@@ -164,21 +238,18 @@ const ChatPage: React.FC = () => {
           "Content-type": "application/json",
           "Authorization": `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({ content: message })
+        body: JSON.stringify(messageData)
       });
 
       const resp = await response.json();
-      setCurrentMessages(prev => [...prev, resp.data]);
-      handleStopTyping();
-      setMessage("");
-      setTimeout(scrollToBottom, 100);
+     
     } catch (error) {
-      console.error('Error sending message:', error);
     }
   };
 
   const handleMessageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newMessage = e.target.value;
+   
     setMessage(newMessage);
     if (newMessage.length > 0) {
       handleStartTyping();
@@ -255,9 +326,15 @@ const ChatPage: React.FC = () => {
           placeholder='Send a message..'
           value={message}
           onChange={handleMessageChange}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              sendMessageHandler();
+              e.preventDefault(); 
+            }
+          }}
         />
         <button
-          className='h-12 px-6 bg-blue-500 text-white rounded-r-full hover:bg-blue-600 focus:outline-none'
+          className='h-12 px-6 bg-indigo-600 text-white rounded-r-full hover:bg-indigo-700 focus:outline-none'
           onClick={sendMessageHandler}
         >
           <IoMdSend />

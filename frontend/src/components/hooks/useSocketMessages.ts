@@ -23,16 +23,17 @@ const useSocketMessages = (setCurrentMessages: React.Dispatch<React.SetStateActi
   const { chats, setChats  , currentChat , user} = useAppContext();
 
   const handleMessageReceive = useCallback((data: MessageType) => {
-    console.log('Message received:', data);
-    console.log('Current chats before update:', chats);
+  
+    if(!chats){
+      return 
+    }
 
-    const newChats: Chat[] = chats.map((chat) => {
+    const newChats: Chat[] =   chats.map((chat) => {
       
       if (chat._id === data.chat && data.chat!==currentChat?._id) {
        
       
         const newUnreadBy = user?._id ? [...chat.unreadBy, user._id] : chat.unreadBy;
-        console.log(newUnreadBy )
 
         return {
           ...chat,
@@ -53,11 +54,11 @@ const useSocketMessages = (setCurrentMessages: React.Dispatch<React.SetStateActi
       return dateB - dateA;
     });
 
-    setChats(updatedChats);    markAsChatRead(data.chat)
+    setChats(updatedChats);  
+      markAsChatRead(data.chat)
   
 
     if(data.chat===currentChat?._id){
-      console.log("hiee")
     setCurrentMessages((prev) => [...prev, data]);
     }
   }, [setCurrentMessages, chats , currentChat]);

@@ -1,6 +1,7 @@
-import React,{ useState } from 'react';
+import React,{ useEffect, useState } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { useNavigate } from 'react-router-dom';
+import LoadingButton from '../miscellaneous/LoadingButton';
 
 
 interface FormData {
@@ -15,9 +16,10 @@ const Login: React.FC = () => {
     password: ''
   });
   const navigate = useNavigate()
-  const isValidEmail =/ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+  const isValidEmail = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-
+const[loading , setLoading] = useState<boolean>(false)
+  
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -32,19 +34,31 @@ const Login: React.FC = () => {
       showToast("All Fields Required")
       return;
     }
-  //   if(isValidEmail.test(email)){
-  //   void login(email, password);
-  // } else{
-  //   showToast("Valid Email Required")
-  // }
-    login(email , password)
+    if(!isValidEmail.test(email)){
+    void login(email, password);
+  } else{
+    showToast("Valid Email Required")
+  }
 
     
   };
 
+  useEffect(()=>{
+    async function awakeServer(){
+      const data = await fetch(process.env.REACT_APP_BACKEND_URL as string,{
+        method:"POST" ,
+        headers:{
+          "content-type":"application/json"
+        }
+      } )
+    }
+
+  } , [])
+
   async function login(email: string, password: string) {
+    setLoading(true)
     try {
-      const response = await fetch(process.env.REACT_APP_BACKEND_URL as string + "auth/login", {
+      const response = await fetch( process.env.REACT_APP_BACKEND_URL + "auth/login", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -64,8 +78,11 @@ const Login: React.FC = () => {
         showToast(resp.message)
       }
     } catch (err) {
+      console.log(err)
       showToast("Error Occured")
      
+    }finally{
+      setLoading(false)
     }
   }
 
@@ -110,8 +127,9 @@ const Login: React.FC = () => {
         <button
           className="w-full px-4 py-2 font-bold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out mt-16"
           onClick={loginHandler}
+          disabled={loading}
         >
-          Login
+          {loading ? <LoadingButton></LoadingButton> :"Login"}
         </button>
 
         <div className="relative my-6">

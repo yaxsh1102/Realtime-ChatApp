@@ -7,11 +7,18 @@ import { useAppContext } from '../../context/AppContext';
 
 
 const useSocketChats = (currentChat :Chat|null) => {
-  const {  setChats , setCurrentChat ,setShowGroupInfo} = useAppContext();
+
+  const {  setChats , setCurrentChat ,setShowGroupInfo , chats} = useAppContext();
+
+
 
   const handleNewChat = useCallback((data: Chat) => {
-    setChats((prevChats) => [data , ...prevChats]);
-  }, [setChats]);
+   
+
+    setChats(prevChats => {
+      if (!prevChats) return [data];
+      return [data, ...prevChats];
+    });  }, [setChats]);
 
   const handleGroupDeleted = useCallback((chatId: string) => {
 
@@ -20,8 +27,11 @@ const useSocketChats = (currentChat :Chat|null) => {
         setShowGroupInfo(false)
 
     }
-    setChats((prevChats) => prevChats.filter((oldChat) => oldChat._id !== chatId));
-  }, [setChats , currentChat]);
+    setChats(prevChats => {
+      if (!prevChats) return [];
+      return prevChats.filter(chat => chat._id !== chatId);
+    });
+  }, [currentChat, setChats, setCurrentChat, setShowGroupInfo]); 
 
   const handleUpdateGroup = useCallback((updatedChat: Chat) => {
   
@@ -29,21 +39,25 @@ const useSocketChats = (currentChat :Chat|null) => {
     
         setCurrentChat(updatedChat)
     }
-    setChats((prevChats) => 
-      prevChats.map((oldChat) => (oldChat._id === updatedChat._id ? updatedChat : oldChat))
-    );
+    setChats(prevChats => {
+      if (!prevChats) return [updatedChat];
+      return prevChats.map(chat => 
+        chat._id === updatedChat._id ? updatedChat : chat
+      );
+    });
    
   }, [setChats , currentChat]);
 
   const handleRemoveFromGroup = useCallback((chatId:string)=>{
-    console.log(chatId)
 
     if(currentChat?._id===chatId){
         setCurrentChat(null)
         setShowGroupInfo(false)
     }
-    setChats((prevChats) => prevChats.filter((oldChat) => oldChat._id !== chatId));
-
+    setChats(prevChats => {
+      if (!prevChats) return [];
+      return prevChats.filter(chat => chat._id !== chatId);
+    });
 
   } , [setChats , currentChat])
 

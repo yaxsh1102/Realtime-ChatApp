@@ -37,31 +37,39 @@ export const createChat = async(req: AuthenticatRequest<null>, res: Response)=>{
             })
 
         }
+
+        const userId =new  mongoose.Types.ObjectId(req.user.id);
+        const paramId = new mongoose.Types.ObjectId(id);
+
+
+        if(id===req.user.id){
+            errResponse.message="Different People for Chat Required"
+            return res.status(400).json(errResponse)
+        }
         let chat = await Chat.findOne({
-            isGroupChat: false,
+            groupChat: false,
             $and: [
-              { members: { $elemMatch: { $eq: req.user.id } } },
-              { members: { $elemMatch: { $eq: id } } },
+              { members: { $elemMatch: { $eq:userId } } },
+              { members: { $elemMatch: { $eq: paramId } } },
             ],
           })
             .populate("members", "-password")
             .populate({
-              path: "latestMessage",
+              path: "lastMessage",
               populate: {
                 path: "sender",
                 select: "name pic email",
               },
             });
+            console.log(chat)
+
 
 
 
 
             if(chat){
-                return res.status(200).json({
-                    success:true ,
-                    message:"Chats Fetched Successfully" ,
-                    data:chat
-                })
+                errResponse.message="Chat Exists"
+                return res.status(400).json(errResponse)
             } 
 
             let newChat:IChat = await Chat.create({

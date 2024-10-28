@@ -189,3 +189,21 @@ export const login  = async(req:Request<{} ,{} ,LoginDTO > , res:Response): Prom
 
       }
     }
+
+
+
+
+    export const awakeServer = async(req:Request , res:Response)=>{
+      try{
+        return res.status(200).json({
+          success:true ,
+          message:"Server Initialzed"
+        })
+      }catch(err){
+        return res.status(500).json({
+          success:true ,
+          message:"Error Occured"
+        })
+
+      }
+    }

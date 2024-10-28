@@ -10,8 +10,8 @@ interface AppContextType {
   setUser: React.Dispatch<React.SetStateAction<User|null>>;
   loader: boolean;
   setLoader: React.Dispatch<React.SetStateAction<boolean>>;
-  chats: Chat[];
-  setChats: React.Dispatch<React.SetStateAction<Chat[]>>;
+  chats: Chat[] | null;
+  setChats: React.Dispatch<React.SetStateAction<Chat[] | null>>;
   filteredChats: Chat[]|null;
   setFilteredChats: React.Dispatch<React.SetStateAction<Chat[]|null>>;
   selectedChatId:string|null ,
@@ -45,7 +45,7 @@ interface AppProviderProps {
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User|null>(null);
   const [loader, setLoader] = useState<boolean>(false);
-  const [chats, setChats] = useState<Chat[]>([]);
+  const [chats, setChats] = useState<Chat[] | null>(null);
   const [filteredChats, setFilteredChats] = useState<Chat[]|null>(null);
   const [currentMessages, setCurrentMessages] = useState<Message[]>([]);
   const[chatMessages , setChatMessages]=useState<ChatMessages[]>([])

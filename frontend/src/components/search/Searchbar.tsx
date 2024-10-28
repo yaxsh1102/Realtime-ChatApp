@@ -10,6 +10,9 @@ const Searchbar = () => {
     if (searchValue.trim() === '') {
       setFilteredChats(chats);
     } else {
+      if(!chats || chats.length==0){
+        return 
+      }
       const filtered = chats.filter(chat => 
         chat.members.some(member => 
           member.name.toLowerCase().includes(searchValue.toLowerCase())

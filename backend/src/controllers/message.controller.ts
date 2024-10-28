@@ -95,6 +95,11 @@ export const sendMessage = async(req:AuthenticatRequest<contentDTO> , res:Respon
 
 
         chat.lastMessage=msgId ;
+        chat.members.forEach((member)=>{
+            if(member.toString()!==req.user.id){
+                chat.unreadBy.push(member)
+            }
+        }) 
 
 
         const newMessage =await Message.findOne({_id:msgId})
@@ -109,19 +114,12 @@ export const sendMessage = async(req:AuthenticatRequest<contentDTO> , res:Respon
             }
 
 
-    chat.members.forEach((member)=>{
-        if(member.toString()!==req.user.id){
-            chat.unreadBy.push(member)
-     emitMessage<typeof newMessage>(member.toString() , "receiveMessage" ,newMessage )
-        }
-    }) 
-    console.log("hhhhhhhhhhh")
+   
 
     chat.markModified("unreadBy")
 
     await chat.save()
 
-    console.log(chat)
 
 
 

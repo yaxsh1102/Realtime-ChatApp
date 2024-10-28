@@ -73,6 +73,17 @@ const initializeSocket = (io: Server) => {
         }
       });
     });
+
+    socket.on("sendNewMessage" , (data)=>{
+      data.members.forEach((member:User)=>{
+        // if(member._id!==data.message.sender._id){
+        emitMessage<typeof data.message>(member._id , "receiveMessage" , data.message)
+        // }
+      })
+     
+    })
+
+
   });
 };
 
@@ -146,6 +157,9 @@ if(users[userId]){
 }
 
 }
+
+
+
 
 
 

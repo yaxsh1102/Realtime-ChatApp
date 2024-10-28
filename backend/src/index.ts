@@ -6,10 +6,11 @@ import connect from './config/database';
 import authRoutes from './routes/auth.routes';
 import chatRoutes from './routes/chat.routes';
 import messageRoutes from './routes/message.routes';
-import initializeSocket from './socket'; 
-import { Chat } from './models/chat.schema';
+import initializeSocket from './socket';
+import { Request , Response } from 'express'; 
+import { Express } from 'express';
 
-const app = express();
+const app :Express = express();
 const server = http.createServer(app);
 
 const io = new Server(server, {
@@ -32,6 +33,11 @@ app.use(cors({
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/chat', chatRoutes);
 app.use('/api/v1/message', messageRoutes);
+
+
+
+
+
 
 
 

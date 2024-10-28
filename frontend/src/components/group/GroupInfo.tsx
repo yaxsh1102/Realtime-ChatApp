@@ -21,18 +21,16 @@ async function leaveGroupHandler(){
       }
        , body:JSON.stringify({group:currentChat?._id })
     }) 
-    console.log("hiiiiii")
-    const resp = await data.json()
-    console.log(resp)
+    if(!chats){
+      return 
+    }
       const newChats = chats.filter((chat)=>chat._id!==currentChat?._id)
       setShowGroupInfo(false)
 
       setChats(newChats)
       setCurrentChat(null) 
-    console.log(1212122)
 
   }catch(err){
-  console.log(err)
   } 
 
 
@@ -48,15 +46,15 @@ async function deleteGroupHandler(){
       }
        , body:JSON.stringify({group:currentChat?._id })
     }) 
-    console.log("hiiiiii")
     const resp = await data.json()
-    console.log(resp)
+    if(!chats){
+      return 
+    }
       const newChats = chats.filter((chat)=>chat._id!==currentChat?._id)
       setShowGroupInfo(false)
 
       setChats(newChats)
       setCurrentChat(null) 
-    console.log(1212122)
 
   }catch(err){
   console.log(err)
@@ -67,7 +65,6 @@ async function deleteGroupHandler(){
   return (
     <div className="w-full h-full flex flex-col bg-[#262729] text-white relative">
       <p className='absolute top-4 left-2 hover:cursor-pointer' onClick={() => {
-          console.log("Closeeeu");  
           setShowMenu(false);
       }}>
         <p onClick={()=>{setShowGroupInfo(false)}}>

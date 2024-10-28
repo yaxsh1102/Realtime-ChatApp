@@ -41,7 +41,6 @@ const Home = () => {
   useEffect(() => {
     const initializeSocket = () => {
       if (user?._id && !initializeRef.current) {
-        console.log("Initializing socket for user:", user._id);
         
         socket.disconnect();
         
@@ -55,7 +54,6 @@ const Home = () => {
     initializeSocket();
   
     return () => {
-      console.log("Cleaning up socket connection");
       socket.disconnect();
       initializeRef.current = false;
     };

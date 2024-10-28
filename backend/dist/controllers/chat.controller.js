@@ -246,7 +246,7 @@ const addToGroupChat = (req, res) => __awaiter(void 0, void 0, void 0, function*
 });
 exports.addToGroupChat = addToGroupChat;
 const removeFromGroupChat = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _b;
     try {
         const { member, group } = req.body;
         if (!member || !group) {
@@ -259,7 +259,7 @@ const removeFromGroupChat = (req, res) => __awaiter(void 0, void 0, void 0, func
         if (!userExists || !groupExists) {
             errResponse.message = !userExists ? ("No Such User Exists") : ("No Such Group Exists");
         }
-        if (req.user.id.toString() !== ((_a = groupExists === null || groupExists === void 0 ? void 0 : groupExists.admin) === null || _a === void 0 ? void 0 : _a._id.toString())) {
+        if (req.user.id.toString() !== ((_b = groupExists === null || groupExists === void 0 ? void 0 : groupExists.admin) === null || _b === void 0 ? void 0 : _b._id.toString())) {
             errResponse.message == "Only Admins Can Remove Members";
             return res.status(400).json(errResponse);
         }

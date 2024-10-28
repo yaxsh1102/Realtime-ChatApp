@@ -55,7 +55,6 @@ const formattedTime: string = isToday(messageDate) ? extractTime(messageDate) : 
    )) 
    
   const isUnread = chat.unreadBy.includes(user?._id)
-  console.log(chat)
  
 
 

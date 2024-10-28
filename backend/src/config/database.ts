@@ -1,7 +1,12 @@
 import mongoose from 'mongoose';
-require('dotenv').config()
+import dotenv from 'dotenv';
+
+dotenv.config(); // Load environment variables
+
+
 
 const url = process.env.DATABASE_URL;
+console.log(url)
 
 
 if (!url) {
@@ -10,9 +15,14 @@ if (!url) {
 
 const connect = async () => {
     try {
-        await mongoose.connect(url);
+        console.log(url)
+        await mongoose.connect(url , {
+            
+          
+        }); 
         console.log("Connected to the database");
     } catch (err) {
+        console.log(err)
         console.error("Database connection error:", err);
     }
 };

@@ -11,8 +11,6 @@ socket.on('connect', () => {
     console.log('Socket connected with ID:', socket.id);
   });
 
-  socket.onAny((eventName, ...args) => {
-    console.log('Socket Event:', eventName, 'Data:', args);
-  });
+ 
 
 export default socket
