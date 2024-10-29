@@ -1,6 +1,6 @@
 import {  io } from 'socket.io-client';
 
-const socket = io("http://localhost:4000/" ,{
+const socket = io("https://chatapp-jgby.onrender.com/" ,{
     reconnectionAttempts: 5,  
     timeout: 10000,          
     autoConnect: true         
