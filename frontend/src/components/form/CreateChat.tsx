@@ -154,6 +154,7 @@ async function createGroupChat (){
     showToast("Group Name Required")
 
   }
+  setCreateLoading(true)
 
   const ids = selectedMembers.map(member => member._id);
   try{
@@ -215,6 +216,8 @@ async function addToGroup (){
     setChats([...newChats , resp.data])
     setCurrentChat(resp.data)
   
+  }else{
+    showToast(resp.message)
   }
   setIsDropdownVisible(false)
   setSearchTerm("")
@@ -345,7 +348,7 @@ finally{
   }}
 >
 
-  Add
+{createLoading ? <LoadingButton/> :"Add"}
             
 </button>)
 }

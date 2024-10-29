@@ -10,6 +10,7 @@ import { FaArrowLeft } from "react-icons/fa";
 import Loader from '../miscellaneous/Loader';
 import { Chat } from '../../interfaces/interfaces';
 import { ChatMessages } from '../../interfaces/interfaces';
+
 interface data{
   name:string ,
   chatId:string
@@ -18,6 +19,7 @@ interface data{
 const ChatPage: React.FC = () => {
   const [message, setMessage] = useState<string>("");
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const inputContainerRef = useRef<HTMLDivElement>(null);
   const [typing, setTyping] = useState<boolean>(false);
   const [showTyping, setShowTyping] = useState<boolean>(false);
   const [typerName, setTyperName] = useState<string>("");
@@ -121,6 +123,18 @@ const ChatPage: React.FC = () => {
 
     markAsRead();
   }, [currentChat?._id, user?._id]);
+  useEffect(() => {
+    const preventBackNavigation = () => {
+      window.history.replaceState(null, document.title, window.location.href);
+    };
+  
+    window.history.pushState(null, document.title, window.location.href);
+    window.addEventListener("popstate", preventBackNavigation);
+  
+    return () => {
+      window.removeEventListener("popstate", preventBackNavigation);
+    };
+  }, []);
 
   useEffect(() => {
     const handleShowTyping = (data:data) => {
@@ -180,6 +194,7 @@ const ChatPage: React.FC = () => {
       createdAt:messageData.createdAt ,
       chat:currentChat._id
     }
+    
 
     setCurrentMessages(prev => [...prev, newMessage]);
     setChatMessages((prevChatMessages: ChatMessages[]) => {
@@ -264,8 +279,6 @@ const ChatPage: React.FC = () => {
     }
   };
 
-
- 
   if (!currentChat) {
     return (
       <div className="flex flex-col items-center justify-center h-full w-full text-white">
@@ -291,66 +304,72 @@ const ChatPage: React.FC = () => {
 
   return (
     <div className='w-full h-screen flex flex-col bg-gradient-to-tr from-[#1c1e22] to-[#434445]'>
-   {loading ? <Loader text="loading messages"></Loader> :  (<><div className='h-16 min-h-[4rem] bg-[#262729] flex items-center text-2xl border-b-[0.1px] border-slate-700 justify-between px-4'>
-        <div className='flex gap-x-4 items-center'>
-          <p className='md:hidden flex hover:cursor-pointer' onClick={()=>{setCurrentChat(null)}}><FaArrowLeft fill='white'/></p>
-          <img
-            src={currentChat.groupChat ? "group.png.png" : avatar }
-            className='h-10 w-10 rounded-full'
-            alt={`${currentChat?.name}'s Avatar`}
-          />
-          <div>
-            <p className={`text-white transition-all duration-300 ${showTyping ? 'text-sm' : ''}`}>{name}</p>
-            <p className={`text-white transition-all duration-300 ${showTyping ? 'flex text-sm' : 'hidden'}`}>
-              {currentChat.groupChat ? `${typerName.split(" ")[0]} is typing..` : "typing.."}
-            </p>
+    {loading ? (
+      <Loader text="loading messages"></Loader>
+    ) : (
+      <>
+        <div className='h-16 bg-[#262729] flex items-center text-2xl border-b-[0.1px] border-slate-700 justify-between px-4'>
+          <div className='flex gap-x-4 items-center'>
+            <p className='md:hidden flex hover:cursor-pointer' onClick={() => { setCurrentChat(null) }}><FaArrowLeft fill='white' /></p>
+            <img
+              src={currentChat.groupChat ? "group.png.png" : (currentChat.members[0]._id === user?._id ? currentChat.members[1].avatar : currentChat.members[0].avatar)}
+              className='h-10 w-10 rounded-full'
+              alt={`${currentChat?.name}'s Avatar`}
+            />
+            <div>
+              <p className={`text-white transition-all duration-300 ${showTyping ? 'text-sm' : ''}`}>{currentChat.groupChat ? currentChat.name : (currentChat.members[0]._id === user?._id ? currentChat.members[1].name : currentChat.members[0].name)}</p>
+              <p className={`text-white transition-all duration-300 ${showTyping ? 'flex text-sm' : 'hidden'}`}>
+                {currentChat.groupChat ? `${typerName.split(" ")[0]} is typing..` : "typing.."}
+              </p>
+            </div>
           </div>
+          {currentChat.groupChat && (
+            <p className='hover:cursor-pointer' onClick={() => setShowGroupInfo(true)}>
+              <CiCircleInfo fill="white" />
+            </p>
+          )}
         </div>
-        {currentChat.groupChat && (
-          <p className='hover:cursor-pointer' onClick={() => setShowGroupInfo(true)}>
-            <CiCircleInfo fill="white" />
-          </p>
-        )}
-      </div>
 
-      <div ref={messagesContainerRef} className='flex-grow overflow-y-auto p-4 no-scrollbar'>
-        {currentMessages?.map((message) => (
-          <Message
-            key={message._id}
-            isRight={message.sender._id === user?._id}
-            content={message.content}
-            time={message.createdAt}
-            name={message.sender.name}
-            avatar={message.sender.avatar}
+        <div ref={messagesContainerRef} className='flex-grow h-[calc(100vh-12rem)] overflow-y-auto p-4 no-scrollbar'>
+          {currentMessages?.map((message) => (
+            <Message
+              key={message._id}
+              isRight={message.sender._id === user?._id}
+              content={message.content}
+              time={message.createdAt}
+              name={message.sender.name}
+              avatar={message.sender.avatar}
+            />
+          ))}
+        </div>
+
+        <div ref={inputContainerRef} className='h-24 w-full p-4 flex items-center bg-[#262729] border-t-[0.1px] border-slate-700'>
+          <input
+            className='flex-grow h-12 px-4 rounded-l-full border border-gray-300 focus:outline-none focus:border-blue-500 text-white bg-[#2e3033]'
+            placeholder='Send a message..'
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                sendMessageHandler();
+                e.preventDefault(); 
+              }
+            }}
           />
-        ))}
-      </div>
+          <button
+            className='h-12 px-6 bg-indigo-600 text-white rounded-r-full hover:bg-indigo-700 focus:outline-none'
+            onClick={sendMessageHandler}
+          >
+            <IoMdSend />
+          </button>
+        </div>
 
-      <div className='h-24 min-h-[6rem] w-full p-4 flex items-center bg-[#262729] border-t-[0.1px] border-slate-700'>
-        <input
-          className='flex-grow h-12 px-4 rounded-l-full border border-gray-300 focus:outline-none focus:border-blue-500 text-white bg-[#2e3033]'
-          placeholder='Send a message..'
-          value={message}
-          onChange={handleMessageChange}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              sendMessageHandler();
-              e.preventDefault(); 
-            }
-          }}
-        />
-        <button
-          className='h-12 px-6 bg-indigo-600 text-white rounded-r-full hover:bg-indigo-700 focus:outline-none'
-          onClick={sendMessageHandler}
-        >
-          <IoMdSend />
-        </button>
-      </div>
-
-      <p className='w-full h-12 sm:hidden flex  justify-center items-center text-center text-white bg-[#262729]'></p>
-      
-      </>)}
-    </div> 
+        <div className='w-full h-12 sm:hidden flex justify-center items-center text-center text-white bg-[#262729]'>
+          Made By Yash Mishra
+        </div>
+      </>
+    )}
+  </div>
   );
 };
 
