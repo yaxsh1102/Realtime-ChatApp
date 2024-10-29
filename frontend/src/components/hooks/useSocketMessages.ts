@@ -2,6 +2,7 @@ import { useEffect, useCallback, useContext } from 'react';
 import { Chat, Message as MessageType } from '../../interfaces/interfaces';
 import socket from '../../socket';
 import { useAppContext } from '../../context/AppContext';
+import { ChatMessages } from '../../interfaces/interfaces';
 
 
 const markAsChatRead = async(id:string)=>{
@@ -20,7 +21,7 @@ const markAsChatRead = async(id:string)=>{
 }
 
 const useSocketMessages = (setCurrentMessages: React.Dispatch<React.SetStateAction<MessageType[]>>) => {
-  const { chats, setChats  , currentChat , user} = useAppContext();
+  const { chats, setChats  , currentChat , user , setChatMessages } = useAppContext();
 
   const handleMessageReceive = useCallback((data: MessageType) => {
   
@@ -40,11 +41,20 @@ const useSocketMessages = (setCurrentMessages: React.Dispatch<React.SetStateActi
           lastMessage: data, 
           unreadBy: newUnreadBy
         };
-      }
+      } else if(chat._id === data.chat && data.chat===currentChat?._id ){
+        return {
+          ...chat,
+          lastMessage: data, 
+        };
+
+
+      } 
 
       
     
-      return chat; 
+      return {
+        ...chat ,
+      }; 
     });
     
 
@@ -61,6 +71,30 @@ const useSocketMessages = (setCurrentMessages: React.Dispatch<React.SetStateActi
     if(data.chat===currentChat?._id){
     setCurrentMessages((prev) => [...prev, data]);
     }
+
+
+
+    setChatMessages((prevChatMessages: ChatMessages[]) => {
+      // const chatExists = prevChatMessages.some(chat => chat.chatId === data.chat);
+    
+      // if (!chatExists) {
+      //   return [...prevChatMessages, {
+      //     chatId: data?.chat,
+      //     messages: [data]
+      //   }]; 
+      // }
+    
+      return prevChatMessages.map((chatMessages) => { 
+        if (chatMessages.chatId === data?.chat) {
+          return {
+            chatId: data.chat,
+            messages: [...chatMessages.messages, data]
+          };
+        }
+        return chatMessages;
+      });
+    });
+  
   }, [setCurrentMessages, chats , currentChat]);
 
   useEffect(() => {

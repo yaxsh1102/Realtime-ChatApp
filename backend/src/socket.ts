@@ -60,7 +60,7 @@ const initializeSocket = (io: Server) => {
 
       data.members.forEach((member: User) => {
         if (users[member._id]) {
-          socket.to(member._id).emit("showTyping" , data.name);
+          socket.to(member._id).emit("showTyping" , {name:data.name , chatId:data.chatId});
         }
       });
     });
@@ -76,9 +76,9 @@ const initializeSocket = (io: Server) => {
 
     socket.on("sendNewMessage" , (data)=>{
       data.members.forEach((member:User)=>{
-        // if(member._id!==data.message.sender._id){
+        if(member._id!==data.message.sender._id){
         emitMessage<typeof data.message>(member._id , "receiveMessage" , data.message)
-        // }
+        }
       })
      
     })

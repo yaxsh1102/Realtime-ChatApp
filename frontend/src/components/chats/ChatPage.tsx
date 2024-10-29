@@ -9,6 +9,11 @@ import useSocketChats from '../hooks/useSocketChats';
 import { FaArrowLeft } from "react-icons/fa";
 import Loader from '../miscellaneous/Loader';
 import { Chat } from '../../interfaces/interfaces';
+import { ChatMessages } from '../../interfaces/interfaces';
+interface data{
+  name:string ,
+  chatId:string
+}
 
 const ChatPage: React.FC = () => {
   const [message, setMessage] = useState<string>("");
@@ -61,7 +66,7 @@ const ChatPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentChat, setChatMessages, setCurrentMessages]);
+  }, [currentChat?._id , setChatMessages , setCurrentMessages]); 
 
   useSocketMessages(setCurrentMessages);
   useSocketChats(currentChat);
@@ -75,9 +80,9 @@ const ChatPage: React.FC = () => {
     } else {
       fetchMessages();
     }
-  }, [currentChat?._id, chatMessages, setCurrentMessages, fetchMessages]);
+  }, [currentChat, setCurrentMessages, fetchMessages]);
 
-  useEffect(() => {
+  useEffect(() => { 
     scrollToBottom();
   }, [currentMessages, scrollToBottom]);
 
@@ -118,12 +123,13 @@ const ChatPage: React.FC = () => {
   }, [currentChat?._id, user?._id]);
 
   useEffect(() => {
-    const handleShowTyping = (name: string) => {
-      setShowTyping(true);
-      setTyperName(name);
+    const handleShowTyping = (data:data) => {
+      if(data.chatId===currentChat?._id){setShowTyping(true);
+      setTyperName(data.name);
+      }
     };
 
-    const handleStopTypingNotification = () => {
+    const handleStopTypingNotification = () => { 
       setShowTyping(false);
     };
 
@@ -175,27 +181,27 @@ const ChatPage: React.FC = () => {
       chat:currentChat._id
     }
 
-    // setCurrentMessages(prev => [...prev, newMessage]);
-    // setChatMessages((prevChatMessages: ChatMessages[]) => {
-    //   const chatExists = prevChatMessages.some(chat => chat.chatId === currentChat._id);
+    setCurrentMessages(prev => [...prev, newMessage]);
+    setChatMessages((prevChatMessages: ChatMessages[]) => {
+      const chatExists = prevChatMessages.some(chat => chat.chatId === currentChat._id);
     
-    //   if (!chatExists) {
-    //     return [...prevChatMessages, {
-    //       chatId: currentChat._id,
-    //       messages: [newMessage]
-    //     }];
-    //   }
+      if (!chatExists) {
+        return [...prevChatMessages, {
+          chatId: currentChat._id,
+          messages: [newMessage]
+        }];
+      }
     
-    //   return prevChatMessages.map((chatMessages) => {
-    //     if (chatMessages.chatId === currentChat._id) {
-    //       return {
-    //         chatId: currentChat._id,
-    //         messages: [...chatMessages.messages, newMessage]
-    //       };
-    //     }
-    //     return chatMessages;
-    //   });
-    // });
+      return prevChatMessages.map((chatMessages) => {
+        if (chatMessages.chatId === currentChat._id) {
+          return {
+            chatId: currentChat._id,
+            messages: [...chatMessages.messages, newMessage]
+          };
+        }
+        return chatMessages;
+      });
+    });
     handleStopTyping();
     setMessage("");
     setTimeout(scrollToBottom, 100);
@@ -339,8 +345,12 @@ const ChatPage: React.FC = () => {
         >
           <IoMdSend />
         </button>
-      </div></>)}
-    </div>
+      </div>
+
+      <p className='w-full h-12 sm:hidden flex  justify-center items-center text-center text-white bg-[#262729]'></p>
+      
+      </>)}
+    </div> 
   );
 };
 

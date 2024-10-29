@@ -94,7 +94,7 @@ const Home = () => {
       >
         <GroupInfo />
       </div>
-=    </div>  )
+   </div>  )
 }
 
 export default Home 

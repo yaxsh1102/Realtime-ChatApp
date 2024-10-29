@@ -45,12 +45,17 @@ const[loading , setLoading] = useState<boolean>(false)
 
   useEffect(()=>{
     async function awakeServer(){
+
+      try{
       const data = await fetch(process.env.REACT_APP_BACKEND_URL as string,{
         method:"POST" ,
         headers:{
           "content-type":"application/json"
         }
       } )
+    }catch(err){
+      
+    }
     }
     awakeServer()
 

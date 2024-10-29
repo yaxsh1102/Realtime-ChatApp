@@ -5,10 +5,10 @@ import { useAppContext } from '../../context/AppContext';
 
 
 
-
+ 
 const useSocketChats = (currentChat :Chat|null) => {
 
-  const {  setChats , setCurrentChat ,setShowGroupInfo , chats} = useAppContext();
+  const {  setChats , setCurrentChat ,setShowGroupInfo } = useAppContext();
 
 
 
