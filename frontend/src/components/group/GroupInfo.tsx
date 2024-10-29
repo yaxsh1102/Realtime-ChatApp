@@ -9,7 +9,7 @@ import { IoMdExit } from "react-icons/io";
 
 
 const GroupInfo = () => {
-const {setShowMenu , setCreateChat , currentChat , user , setShowGroupInfo  , chats , setChats , setCurrentChat , setShowAddMembers} = useAppContext() 
+const {setShowMenu , setCreateChat , currentChat , user , setShowGroupInfo  , chats , setChats , setCurrentChat , setShowAddMembers , showToast} = useAppContext() 
 
 async function leaveGroupHandler(){
   try{
@@ -31,6 +31,7 @@ async function leaveGroupHandler(){
       setCurrentChat(null) 
 
   }catch(err){
+    showToast("Error Occured")
   } 
 
 
@@ -50,13 +51,20 @@ async function deleteGroupHandler(){
     if(!chats){
       return 
     }
+    if(resp.success){
       const newChats = chats.filter((chat)=>chat._id!==currentChat?._id)
       setShowGroupInfo(false)
 
       setChats(newChats)
       setCurrentChat(null) 
 
+    }else{
+      showToast(resp.message)
+    }
+     
+
   }catch(err){
+    showToast("Error Occured")
   console.log(err)
   }
 

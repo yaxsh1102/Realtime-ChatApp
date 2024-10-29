@@ -2,6 +2,8 @@ import { MdDeleteForever } from 'react-icons/md'
 import { User } from '../../interfaces/interfaces'
 import { useAppContext } from '../../context/AppContext'
 import { IoMdExit } from "react-icons/io";
+import { useState } from 'react';
+import LoadingButton from '../miscellaneous/LoadingButton';
 
 interface GroupParticpantProp{
 member:User ,
@@ -13,10 +15,12 @@ isAdmin?:boolean
 
 
 const GroupParticipants = ({member , isSearchResult=false , isAdmin=false}:GroupParticpantProp) => {
-const {user , currentChat , chats , setChats , setCurrentChat , setShowGroupInfo} = useAppContext()
+const {user , currentChat , chats , setChats , setCurrentChat , setShowGroupInfo , showToast} = useAppContext()
+const[loading , setLoading] = useState<boolean>(false)
 
 
 async function removeFromGroupHandler(){
+  setLoading(true)
   try{
     const data = await fetch(`${process.env.REACT_APP_BACKEND_URL}chat/remove-from-group`, {
       method:"POST" ,
@@ -33,21 +37,30 @@ async function removeFromGroupHandler(){
     if(!chats){
       return
     }
+
+    if(resp.success){
       const newChats = chats.filter((chat)=>chat._id!==currentChat?._id)
       setChats([...newChats , resp.data])
       setCurrentChat(resp.data) 
+    }else{
+      showToast(resp.message)
+    }
     
 
     
   
     
   }catch(err){
-  console.log(err)
-  } 
+    showToast("Error Occured")
+  } finally{
+    setLoading(false)
+  }
 
 }
 
 async function leaveGroupHandler(){
+  setLoading(true)
+
   try{
     const data = await fetch(`${process.env.REACT_APP_BACKEND_URL}chat/leave-group`, {
       method:"POST" ,
@@ -61,14 +74,22 @@ async function leaveGroupHandler(){
     if(!chats){
       return
     }
+    if(resp.success){
       const newChats = chats.filter((chat)=>chat._id!==currentChat?._id)
       setShowGroupInfo(false)
       setChats(newChats)
-      setCurrentChat(null) 
+      setCurrentChat(null)
+    }else{
+      showToast(resp.message)
+    } 
 
   }catch(err){
   console.log(err)
-  } 
+  } finally{
+    setLoading(false)
+
+
+  }
 
 
 }
@@ -76,7 +97,7 @@ async function leaveGroupHandler(){
 
  
   return (
-    <div className='w-full border-b-[1px] border-b-slate-500 text-white hover:text-slate-300'>
+    <div className='w-full border-b-[1px] border-b-slate-500 text-white'>
          <div className='flex justify-between  items-center h-16 mt-2 w-full'>
             <div className='flex items-center w-full'>
                 <img src={member?.avatar} height={24} width={24} className='lg:h-12 lg:w-12  h-10 w-10' alt="" />
@@ -95,14 +116,15 @@ async function leaveGroupHandler(){
                         currentChat?.admin?._id === user?._id && (
                           member._id === currentChat?.admin?._id ? (
                             <p onClick={leaveGroupHandler}>
-                              <IoMdExit className='w-8 h-8' />
+                              {loading ? <LoadingButton></LoadingButton> :  <IoMdExit className='w-8 h-8' />
+                              }
                             </p>
                           ) : (
-                            <p>
-                              <MdDeleteForever className='w-8 h-8' onClick={removeFromGroupHandler} />
+                            <p className=' hover:cursor-pointer'>
+                             { loading ? <LoadingButton></LoadingButton>  : <MdDeleteForever className='w-8 h-8' onClick={removeFromGroupHandler} />}
                             </p>
                           )
-                        )
+                        ) 
                       ) : (
                         ""
                       )
