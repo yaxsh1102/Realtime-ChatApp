@@ -2,16 +2,20 @@ import GroupParticipants from './GroupParticipants';
 import { IoIosPeople } from "react-icons/io";
 import { MdDeleteForever } from "react-icons/md";
 import { IoMdClose } from "react-icons/io";
-import React, { Dispatch, SetStateAction } from 'react';
+import React, { useState } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { IoMdExit } from "react-icons/io";
+import LoadingButton from '../miscellaneous/LoadingButton';
 
 
 
 const GroupInfo = () => {
 const {setShowMenu , setCreateChat , currentChat , user , setShowGroupInfo  , chats , setChats , setCurrentChat , setShowAddMembers , showToast} = useAppContext() 
+const[leaveGroupLoader , setLeaveGroupLoader] = useState<boolean>(false)
+const[deleteGroupLoader , setDeleteGroupLoader] = useState<boolean>(false)
 
 async function leaveGroupHandler(){
+  setLeaveGroupLoader(true)
   try{
     const data = await fetch(`${process.env.REACT_APP_BACKEND_URL}chat/leave-group`, {
       method:"POST" ,
@@ -32,13 +36,16 @@ async function leaveGroupHandler(){
 
   }catch(err){
     showToast("Error Occured")
-  } 
+  } finally{
+    setLeaveGroupLoader(false)
+  }
 
 
 }
 
 async function deleteGroupHandler(){
   try{
+    setDeleteGroupLoader(true)
     const data = await fetch(`${process.env.REACT_APP_BACKEND_URL}chat/delete-group`, {
       method:"POST" ,
       headers:{
@@ -61,11 +68,12 @@ async function deleteGroupHandler(){
     }else{
       showToast(resp.message)
     }
-     
+      
 
   }catch(err){
     showToast("Error Occured")
-  console.log(err)
+  }finally{
+    setDeleteGroupLoader(true)
   }
 
 }
@@ -106,11 +114,11 @@ async function deleteGroupHandler(){
           </button>
           <button className="bg-slate-700 text-white py-2 px-4 rounded flex items-center justify-center" onClick={deleteGroupHandler}>
             <MdDeleteForever className="mr-2" />
-            Delete Group
+            {deleteGroupLoader ? <LoadingButton></LoadingButton>:"Delete Group"}
           </button>
-          </>) : ( <><button className="bg-slate-700 text-white py-2 px-4 rounded flex items-center justify-center" onClick={leaveGroupHandler}>
+          </>) : ( <><button className="bg-slate-700 text-white py-2 px-4 rounded flex items-center justify-center" onClick={leaveGroupHandler} disabled={leaveGroupLoader}>
             <IoMdExit className="mr-2" />
-            Leave Group
+            {leaveGroupLoader ? <LoadingButton/> :"Leave Group"}
           </button>
           </>)
 }

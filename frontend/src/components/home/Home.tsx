@@ -9,10 +9,8 @@ import { useEffect } from 'react';
 import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import socket from '../../socket';
-import useSocketChats from '../hooks/useSocketChats';
-import { Chat } from '../../interfaces/interfaces';
-const Home = () => {
 
+const Home = () => {
 
 
   const appContext = useContext(AppContext); 
@@ -31,7 +29,7 @@ const Home = () => {
   
 
 
-  const { setChats  , setLoader , createChat  , showMenu  , showGroupInfo  , user , currentChat} = appContext;
+  const { createChat  , showMenu  , showGroupInfo  , user , currentChat} = appContext;
 
   if(!localStorage.getItem("token")){
     navigate("/login")

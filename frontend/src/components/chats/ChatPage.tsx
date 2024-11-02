@@ -57,13 +57,15 @@ const ChatPage: React.FC = () => {
         }
       });
       
-      if (!response.ok) {
+      if (!response.ok) { 
         throw new Error('Failed to fetch messages');
       }
 
       const data = await response.json();
-      setChatMessages(prev => [...prev, { chatId: currentChat._id, messages: data.data }]);
-      setCurrentMessages(data.data);
+      setChatMessages(prev => [...prev, { chatId: currentChat._id, messages: data.data.messages }]);
+      if(data.data.chatId===currentChat._id){
+      setCurrentMessages(data.data.messages);
+      } 
     } catch (error) {
     } finally {
       setLoading(false);
@@ -138,10 +140,12 @@ const ChatPage: React.FC = () => {
 
   useEffect(() => {
     const handleShowTyping = (data:data) => {
-      if(data.chatId===currentChat?._id){setShowTyping(true);
+      if(data.chatId===currentChat?._id){
+      
+      setShowTyping(true);
       setTyperName(data.name);
       }
-    };
+    }; 
 
     const handleStopTypingNotification = () => { 
       setShowTyping(false);
@@ -290,17 +294,7 @@ const ChatPage: React.FC = () => {
     );
       }
 
-  const name = currentChat.groupChat 
-    ? currentChat.name
-    : (currentChat.members[0]._id === user?._id 
-      ? currentChat.members[1].name 
-      : currentChat.members[0].name);
-
-      const avatar = currentChat.groupChat 
-      ? currentChat.name
-      : (currentChat.members[0]._id === user?._id 
-        ? currentChat.members[1].avatar 
-        : currentChat.members[0].avatar);
+ 
 
   return (
     <div className='w-full h-screen flex flex-col bg-gradient-to-tr from-[#1c1e22] to-[#434445]'>
@@ -345,10 +339,10 @@ const ChatPage: React.FC = () => {
 
         <div ref={inputContainerRef} className='h-24 w-full p-4 flex items-center bg-[#262729] border-t-[0.1px] border-slate-700'>
           <input
-            className='flex-grow h-12 px-4 rounded-l-full border border-gray-300 focus:outline-none focus:border-blue-500 text-white bg-[#2e3033]'
+            className='flex-grow h-12 px-4 rounded-l-full border border-gray-300 focus:outline-none focus:border-indigo-500 text-white bg-[#2e3033]'
             placeholder='Send a message..'
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={handleMessageChange} 
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 sendMessageHandler();

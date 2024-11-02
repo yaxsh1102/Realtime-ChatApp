@@ -30,7 +30,9 @@ interface AppContextType {
   setShowGroupInfo:React.Dispatch<React.SetStateAction<boolean>>  ,
   addMembers:boolean ,
   setShowAddMembers:React.Dispatch<React.SetStateAction<boolean>>  ,
-  showToast:(message:string)=>void
+  showToast:(message:string)=>void ,
+  serverReady:boolean ,
+  setServerReady:React.Dispatch<React.SetStateAction<boolean>> 
 
   
 
@@ -55,6 +57,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const[createChat , setCreateChat] = useState<boolean>(false)
   const[showGroupInfo , setShowGroupInfo] = useState<boolean>(false) 
   const[addMembers , setShowAddMembers] = useState<boolean>(false)
+const[serverReady , setServerReady] = useState<boolean>(false)
+
 
   const showToast =(message:string)=>{
     console.log(message)
@@ -96,7 +100,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     setShowGroupInfo ,
     addMembers , 
     setShowAddMembers ,
-    showToast
+    showToast ,
+    serverReady , 
+    setServerReady
   
      
 

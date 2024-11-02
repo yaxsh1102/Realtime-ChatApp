@@ -27,7 +27,7 @@ const ChatComponent:React.FC<ChatComponentProps> = ({chat}) => {
   }
    const dateStr: string = chat.lastMessage?.createdAt + "";
 const messageDate: Date = new Date(dateStr); 
-
+ 
 const isToday = (someDate: Date): boolean => {
   const today: Date = new Date();
   return someDate.getDate() === today.getDate() &&

@@ -10,7 +10,7 @@ interface FormData {
 }
 
 const Login: React.FC = () => {
-  const{ setUser , showToast} = useAppContext()
+  const{ setUser , showToast , serverReady , setServerReady} = useAppContext()
   const [formData, setFormData] = useState<FormData>({
     email: '',
     password: ''
@@ -34,7 +34,7 @@ const[loading , setLoading] = useState<boolean>(false)
       showToast("All Fields Required")
       return;
     }
-    if(isValidEmail.test(email)){
+    if(!isValidEmail.test(email)){
     void login(email, password);
   } else{
     showToast("Valid Email Required")
@@ -55,9 +55,11 @@ const[loading , setLoading] = useState<boolean>(false)
       } )
     }catch(err){
       
+    }finally{
+      setServerReady(true)
     }
     }
-    awakeServer()
+   !serverReady &&  awakeServer()
 
   } , [])
 
@@ -93,7 +95,17 @@ const[loading , setLoading] = useState<boolean>(false)
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-tr from-[#000000] to-[#434343]">
+    <div className="relative flex items-center justify-center min-h-screen bg-gradient-to-tr from-[#000000] to-[#434343]">
+      {!serverReady && <div className='fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center'>
+        <div className="flex flex-col items-center space-y-4 bg-black/40 p-6 rounded-lg">
+          <LoadingButton/>
+            <p className="text-white text-lg">
+              Warming up the server...
+            </p>
+            <p className="text-white text-sm">
+              This may take up to a minute
+            </p>
+          </div></div>}
       <div className="p-8 space-y-8  rounded-md shadow-xl w-96  bg-gray-800">
         <h2 className="text-4xl font-bold text-center text-white">Login</h2>
 

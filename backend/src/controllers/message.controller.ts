@@ -45,10 +45,14 @@ export const getMessages = async(req:AuthenticatRequest<null> , res:Response)=>{
 
 
 
-        const success:SuccessResponseDTO<typeof messages>={
+        const data = {
+            messages:messages ,
+            chatId:chatId
+        }
+        const success:SuccessResponseDTO<typeof data>={
             success:true ,
             message:"Chats Fetched Successfully" ,
-            data:messages
+            data:data
         }
 
         return res.status(200).json(success)

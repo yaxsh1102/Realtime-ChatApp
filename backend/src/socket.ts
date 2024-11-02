@@ -26,10 +26,8 @@ let ioGlobal: Server | null = null;
 const initializeSocket = (io: Server) => {
   ioGlobal = io; 
   io.on("connection", (socket: Socket) => {
-    console.log("New client connected! Socket ID:", socket.id);
 
     socket.on("initializeUser", (userId: string) => {
-      console.log(`User initialized: ${userId}`);
 
       if (users[userId]) {
         users[userId].disconnect();
@@ -39,17 +37,12 @@ const initializeSocket = (io: Server) => {
       socket.join(userId); 
     });
 
-    socket.on("joinChat", (chatId: string) => {
-      console.log(`User joined chat: ${chatId}`);
-      socket.join(chatId);
-    });
+    
 
     socket.on("disconnect", (reason: string) => {
-      console.log(`Client disconnected. Reason: ${reason}`);
       for (const userId in users) {
         if (users[userId] === socket) {
           delete users[userId];
-          console.log(`Removed user from tracking: ${userId}`);
           break;
         }
       }
@@ -89,22 +82,18 @@ const initializeSocket = (io: Server) => {
 
 export const emitMessage = <T>(userId: string, event: string, data: T) => {
   if (!ioGlobal) {
-    console.error("Socket.io is not initialized");
     return;
   }
 
   if (users[userId]) {
     ioGlobal.to(users[userId].id).emit(event, data);
-    console.log(`Emitting event '${event}' to user: ${userId}`);
   } else {
-    console.log(`User with ID: ${userId} is not connected.`);
   }
 };
 
 
 export const updateGroupIO=(userId:string , event:string , data:IChat)=>{
     if (!ioGlobal) {
-        console.error("Socket.io is not initialized");
         return;
       }
 
@@ -119,14 +108,12 @@ export const updateGroupIO=(userId:string , event:string , data:IChat)=>{
 
 export const removeFromGroupIO=(userId:string , event:string , chatId:string)=>{
     if (!ioGlobal) {
-        console.error("Socket.io is not initialized");
         return;
       }
 
     if(users[userId]){
         ioGlobal.to(users[userId].id).emit(event  , chatId)
     }else{
-        console.log("hii")
     }
 
 
@@ -135,12 +122,10 @@ export const removeFromGroupIO=(userId:string , event:string , chatId:string)=>{
 
 export const deleteGroupIO = (userId:string , event:string , chatId:string)=>{
     if (!ioGlobal) {
-        console.error("Socket.io is not initialized");
         return;
       }
 
     if(users[userId]){
-        console.log("pink")
         ioGlobal.to(users[userId].id).emit(event  , chatId)
     }
 
@@ -148,7 +133,6 @@ export const deleteGroupIO = (userId:string , event:string , chatId:string)=>{
 
 export const newChatIO = (userId:string , event:string , data:IChat)=>{
   if (!ioGlobal) {
-    console.error("Socket.io is not initialized");
     return;
   }
 
@@ -157,14 +141,6 @@ if(users[userId]){
 }
 
 }
-
-
-
-
-
-
-
-
 
 
 export default initializeSocket;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
 import Loader from '../miscellaneous/Loader';
@@ -23,8 +23,27 @@ const Signup: React.FC = () => {
     password: '',
     gender: ''
   });
+  useEffect(()=>{
+    async function awakeServer(){
 
-  const { setUser , showToast } = useAppContext();
+      try{
+      const data = await fetch(process.env.REACT_APP_BACKEND_URL as string,{
+        method:"POST" ,
+        headers:{
+          "content-type":"application/json"
+        }
+      } )
+    }catch(err){
+      
+    }finally{
+      setServerReady(true)
+    }
+    }
+   !serverReady &&  awakeServer()
+
+  } , [])
+
+  const { setUser , showToast , serverReady , setServerReady } = useAppContext();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -74,7 +93,17 @@ const Signup: React.FC = () => {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-tr from-[#000000] to-[#434343]">
+    <div className="relative flex items-center justify-center min-h-screen bg-gradient-to-tr from-[#000000] to-[#434343]">
+       {!serverReady && <div className='fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center'>
+        <div className="flex flex-col items-center space-y-4 bg-black/40 p-6 rounded-lg">
+          <LoadingButton/>
+            <p className="text-white text-lg">
+              Warming up the server...
+            </p>
+            <p className="text-white text-sm">
+              This may take up to a minute
+            </p>
+          </div></div>}
       <div className="p-8 space-y-8 rounded-md shadow-xl w-96 bg-gray-800">
         <h2 className="text-4xl font-bold text-center text-white">Signup</h2>
 
