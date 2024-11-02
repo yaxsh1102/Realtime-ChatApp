@@ -1,4 +1,4 @@
-# Realtime Chat-App
+# Realtime-ChatApp
 
 
 Welcome to my Chat App! This project showcases my skills in building a modern chat application with a focus on real-time communication. It’s designed to facilitate conversations in user-friendly environment, allowing users to chat  in both one-on-one and group chats.
@@ -14,6 +14,13 @@ https://chat-app-ecru-nu.vercel.app
 - **Intuitive Search Functionality**: Quickly find  people by typing in their names.
 - **User Authentication**: Secure login with token-based authentication to protect user data.
 - **Responsive Design**: A fully responsive layout that adapts to different screen sizes .
+
+  ## Screenshots
+1. ![Screenshot 5](https://drive.google.com/uc?export=view&id=1hKUPuh8_B7yXqeunfWmw63uD4JqZbCYq)
+2. ![Screenshot 1](https://drive.google.com/uc?export=view&id=1Dn1OQpq2XeYcRCmht_ovkmE8rWUUices)
+3. ![Screenshot 3](https://drive.google.com/uc?export=view&id=1ibpBrWOPuXKyfmk-6JVPdAeYos3WyPFa)
+4. ![Screenshot 4](https://drive.google.com/uc?export=view&id=1HZsv9GPi9eJmpC1SHLAiP2JGzNIKl09I)
+
 
 ## Tech Stack
 
@@ -56,6 +63,12 @@ backend  : npm run start:dev
 For any inquiries or feedback, reach out :
 
 - **Email**: yashmishra.vapi@gmail.com
+
+
+
+
+
+
 
 
 
