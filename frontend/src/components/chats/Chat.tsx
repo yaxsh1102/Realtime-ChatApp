@@ -55,6 +55,10 @@ const formattedTime: string = isToday(messageDate) ? extractTime(messageDate) : 
    )) 
    
   const isUnread = chat.unreadBy.includes(user?._id)
+  let content = ""
+  if(chat.lastMessage){
+   content = chat?.lastMessage?.content.length>20 ? chat.lastMessage.content.substring(0 , 20) +"...":chat?.lastMessage?.content
+  }
  
 
 
@@ -79,10 +83,10 @@ const formattedTime: string = isToday(messageDate) ? extractTime(messageDate) : 
           </div>
   
           <div className="flex justify-between w-full items-center">
-            <p className="text-xs truncate">{chat.lastMessage?.content || ""}</p>
+            <p className="text-xs truncate">{content}</p>
            {isUnread &&  <span>🟢</span>}
           </div>
-        </div>
+        </div> 
       </div>
     </div>
   </div>

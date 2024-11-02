@@ -70,6 +70,10 @@ const ChatPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
+    setShowTyping(false);
+    setTyperName("");
+    setMessage("")
+    
   }, [currentChat?._id , setChatMessages , setCurrentMessages]); 
 
   useSocketMessages(setCurrentMessages);
@@ -139,11 +143,14 @@ const ChatPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    socket.off("showTyping");
+      socket.off("stopShowingTyping") 
     const handleShowTyping = (data:data) => {
-      if(data.chatId===currentChat?._id){
+      if(data.chatId.toString()===currentChat?._id.toString()){
+      
       
       setShowTyping(true);
-      setTyperName(data.name);
+      setTyperName(data.name); 
       }
     }; 
 
@@ -312,10 +319,11 @@ const ChatPage: React.FC = () => {
             />
             <div>
               <p className={`text-white transition-all duration-300 ${showTyping ? 'text-sm' : ''}`}>{currentChat.groupChat ? currentChat.name : (currentChat.members[0]._id === user?._id ? currentChat.members[1].name : currentChat.members[0].name)}</p>
-              <p className={`text-white transition-all duration-300 ${showTyping ? 'flex text-sm' : 'hidden'}`}>
+              { showTyping ?  <p className={`text-white transition-all duration-300 text-sm`}>
                 {currentChat.groupChat ? `${typerName.split(" ")[0]} is typing..` : "typing.."}
-              </p>
-            </div>
+              </p> :<p></p>
+              }
+            </div> 
           </div>
           {currentChat.groupChat && (
             <p className='hover:cursor-pointer' onClick={() => setShowGroupInfo(true)}>

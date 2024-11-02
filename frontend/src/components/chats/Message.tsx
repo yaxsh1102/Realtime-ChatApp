@@ -26,11 +26,11 @@ const Message = ({ isRight = true, content, time, name, avatar }: MessageProps) 
         )}
         <div className="flex flex-col overflow-hidden flex-grow min-w-0 bg-[#262729] p-2 rounded-tl-lg ">
           {currentChat?.groupChat && (
-            <p className="text-sm font-semibold truncate text-indigo-700">{name.split(" ")[0]}</p>
+            <p className="text-xs font-semibold truncate text-indigo-700">{name.split(" ")[0]}</p>
           )}
-          <div className="flex justify-between items-end">
-            <p className="text-md break-words text-white">{content}</p>
-            <p className="text-xs text-white/80 ml-2 self-end">{timeStr}</p>
+          <div className="flex justify-between items-end w-full ">
+            <p className="text-sm break-words text-white md:max-w-68 max-w-36">{content}</p>
+            <p className="text-[0.75rem] text-white/80 ml-2 self-end">{timeStr}</p>
           </div>
         </div>
       </div>
